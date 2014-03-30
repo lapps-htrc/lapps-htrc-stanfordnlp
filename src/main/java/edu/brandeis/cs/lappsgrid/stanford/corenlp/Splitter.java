@@ -74,7 +74,9 @@ public class Splitter extends AbstractStanfordCoreNLPWebService implements
             ann.setLabel(Annotations.SENTENCE);
 
             Map<String, String> features = ann.getFeatures();
-            putFeature(features, "sentence", sentence1.toString());
+            String escaped = sentence1.toString();
+            escaped = escaped.replaceAll("\n", "\\n");
+            putFeature(features, "sentence", escaped);
 
             step.addAnnotation(ann);
         }
