@@ -1,9 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.lappsgrid.maven</groupId>
+        <artifactId>parent-pom</artifactId>
+        <version>1.1.2</version>
+    </parent>
 	<groupId>edu.brandeis.cs.lapps</groupId>
 	<artifactId>stanfordnlp-web-service</artifactId>
-	<version>0.0.2-SNAPSHOT</version>
+	<version>0.0.4-SNAPSHOT</version>
 	<packaging>war</packaging>
 	<name>Web Services wrapping Stanford NLP tools</name>
 	<description>
@@ -11,10 +16,16 @@
 	Provide converter for the Standford one-per-line format to LEDS.
 	</description>
 
+
+    <!--http://www.anc.org:8080/Versions/-->
 	<properties>
 		<lapps.version>1.0.1</lapps.version>
-		<lapps.core.version>1.1.0</lapps.core.version>
-		<vocabulary.version>0.9.3</vocabulary.version>
+		<lapps.core.version>1.2.0</lapps.core.version>
+        <lapps.discriminator>1.2.3</lapps.discriminator>
+        <lapps.util>1.0.0</lapps.util>
+		<vocabulary.version>0.9.4</vocabulary.version>
+        <serialization.version>0.13.0-SNAPSHOT</serialization.version>
+        <anc.common>3.4.0</anc.common>
         <stanford.version>3.3.1</stanford.version>
 	</properties>
 
@@ -62,22 +73,22 @@
 		<dependency>
 			<groupId>org.lappsgrid</groupId>
 			<artifactId>discriminator</artifactId>
-			<version>1.2.2</version>
+			<version>${lapps.discriminator}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.anc.lapps</groupId>
 			<artifactId>util</artifactId>
-			<version>1.0.0</version>
+			<version>${lapps.util}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.anc.lapps</groupId>
 			<artifactId>serialization</artifactId>
-			<version>0.12.0</version>
+			<version>${serialization.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.anc</groupId>
 			<artifactId>common</artifactId>
-			<version>3.1.1</version>
+			<version>${anc.common}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.lappsgrid</groupId>

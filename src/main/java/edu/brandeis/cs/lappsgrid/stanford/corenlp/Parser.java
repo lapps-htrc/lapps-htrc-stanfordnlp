@@ -63,6 +63,9 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
         //
         IDGenerator id = new IDGenerator();
 
+        System.out.println("~~~~~~~~~~~~~~~~~~");
+        System.out.println(container.getText());
+        System.out.println("~~~~~~~~~~~~~~~~~~");
 
         // NLP processing
         Annotation annotation = new Annotation(container.getText());
