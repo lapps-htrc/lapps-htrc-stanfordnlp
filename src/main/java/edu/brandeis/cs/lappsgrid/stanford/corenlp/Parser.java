@@ -57,7 +57,8 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
         // steps
         ProcessingStep step = new ProcessingStep();
         // steps metadata
-        step.getMetadata().put(Metadata.PRODUCED_BY, this.getClass().getName()  + ":" + Version);
+//        step.getMetadata().put(Metadata.PRODUCED_BY, this.getClass().getName()  + ":" + Version);
+        step.addContains(Annotations.TOKEN, this.getClass().getName() + ":" + Version, "Parser");
 
 
         //

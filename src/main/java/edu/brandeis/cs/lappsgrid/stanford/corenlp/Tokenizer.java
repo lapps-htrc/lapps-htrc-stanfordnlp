@@ -52,8 +52,9 @@ public class Tokenizer extends AbstractStanfordCoreNLPWebService implements
         // steps
         ProcessingStep step = new ProcessingStep();
         // steps metadata
-        step.getMetadata().put(Metadata.PRODUCED_BY, this.getClass().getName() + ":" + Version);
-        step.getMetadata().put(Metadata.CONTAINS, "Token");
+//        step.getMetadata().put(Metadata.PRODUCED_BY, this.getClass().getName() + ":" + Version);
+//        step.getMetadata().put(Metadata.CONTAINS, "Token");
+        step.addContains(Features.PART_OF_SPEECH, this.getClass().getName() + ":" + Version, "Tokens");
 
         //
         IDGenerator id = new IDGenerator();

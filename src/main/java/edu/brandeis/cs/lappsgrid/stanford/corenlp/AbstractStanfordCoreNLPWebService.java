@@ -36,7 +36,7 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
     static protected ConcurrentHashMap<String, StanfordCoreNLP> cache =
             new ConcurrentHashMap<String, StanfordCoreNLP>();
 
-    public static final String Version = "0.0.2";
+    public static final String Version = "0.0.4";
 
 	public static final String PROP_TOKENIZE = "tokenize";
 	public static final String PROP_SENTENCE_SPLIT = "ssplit";

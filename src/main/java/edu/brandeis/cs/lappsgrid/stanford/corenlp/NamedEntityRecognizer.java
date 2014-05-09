@@ -69,8 +69,10 @@ public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService
         // steps
         ProcessingStep step = new ProcessingStep();
         // steps metadata
-        step.getMetadata().put(Metadata.PRODUCED_BY, this.getClass().getName() + ":" + Version);
-        step.getMetadata().put(Metadata.CONTAINS, Annotations.NE);
+//        step.getMetadata().put(Metadata.PRODUCED_BY, this.getClass().getName() + ":" + Version);
+//        step.getMetadata().put(Metadata.CONTAINS, Annotations.NE);
+        step.addContains(Features.NER, this.getClass().getName() + ":" + Version, "ner");
+
 
         //
         IDGenerator id = new IDGenerator();

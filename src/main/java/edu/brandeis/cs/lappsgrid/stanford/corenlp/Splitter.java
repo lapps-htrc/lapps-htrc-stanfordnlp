@@ -54,9 +54,9 @@ public class Splitter extends AbstractStanfordCoreNLPWebService implements
         // steps
         ProcessingStep step = new ProcessingStep();
         // steps metadata
-        step.getMetadata().put(Metadata.PRODUCED_BY, this.getClass().getName()  + ":" + Version);
-        step.getMetadata().put(Metadata.CONTAINS, "Splitter");
-
+//        step.getMetadata().put(Metadata.PRODUCED_BY, this.getClass().getName()  + ":" + Version);
+//        step.getMetadata().put(Metadata.CONTAINS, "Splitter");
+        step.addContains(Annotations.SENTENCE, this.getClass().getName() + ":" + Version, "chunk:sentence");
 
         //
         IDGenerator id = new IDGenerator();
