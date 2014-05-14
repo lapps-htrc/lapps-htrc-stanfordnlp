@@ -10,6 +10,7 @@ import org.anc.util.IDGenerator;
 import org.lappsgrid.api.Data;
 import org.lappsgrid.api.LappsException;
 import org.lappsgrid.core.DataFactory;
+import org.lappsgrid.discriminator.DiscriminatorRegistry;
 import org.lappsgrid.discriminator.Types;
 
 import edu.brandeis.cs.lappsgrid.stanford.corenlp.api.IPOSTagger;
@@ -19,10 +20,12 @@ import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.CoreMap;
+import org.lappsgrid.serialization.json.JsonTaggerSerialization;
 import org.lappsgrid.vocabulary.Annotations;
 import org.lappsgrid.vocabulary.Features;
 import org.lappsgrid.vocabulary.Metadata;
 
+import org.json.JSONObject;
 
 public class POSTagger extends AbstractStanfordCoreNLPWebService implements
 		IPOSTagger {
@@ -49,55 +52,64 @@ public class POSTagger extends AbstractStanfordCoreNLPWebService implements
 	}
 
 	@Override
-	public Data execute(Data input) {
-        Container container = null;
-        try
+	public Data execute(Data data) {
+
+
+        long discriminator = data.getDiscriminator();
+        if (discriminator == Types.ERROR)
         {
-            container = getContainer(input);
-        }
-        catch (LappsException e)
-        {
-            return DataFactory.error(e.getMessage());
-        }
+            return data;
+        } else if (discriminator == Types.JSON) {
+            String jsonstr = data.getPayload();
+            JsonTaggerSerialization json = new JsonTaggerSerialization(jsonstr);
+            json.setProducer(this.getClass().getName() + ":" + VERSION);
+            json.setType("tagger:stanford");
 
-        // steps
-        ProcessingStep step = new ProcessingStep();
-        // steps metadata
-//        step.getMetadata().put(Metadata.PRODUCED_BY, this.getClass().getName()  + ":" + Version);
-//        step.getMetadata().put(Metadata.CONTAINS, Features.PART_OF_SPEECH);
-        step.addContains(Features.PART_OF_SPEECH, this.getClass().getName() + ":" + Version, "posTag");
-
-
-        //
-        IDGenerator id = new IDGenerator();
-
-
-        // NLP processing
-        Annotation annotation = new Annotation(container.getText());
-        snlp.annotate(annotation);
-        List<CoreMap> sentences = annotation.get(SentencesAnnotation.class);
-        for (CoreMap sentence1 : sentences) {
-            for (CoreLabel token : sentence1.get(TokensAnnotation.class)) {
-                String ps = token.get(PartOfSpeechAnnotation.class);
-                org.anc.lapps.serialization.Annotation ann =
-                        new org.anc.lapps.serialization.Annotation();
-                ann.setId(id.generate("tok"));
-                ann.setStart(token.beginPosition());
-                ann.setEnd(token.endPosition());
-                ann.setLabel(Annotations.TOKEN);
-
-                Map<String, String> features = ann.getFeatures();
-                putFeature(features, Features.LEMMA, token.lemma());
-                putFeature(features, Features.CATEGORY, token.category());
-                putFeature(features, Features.PART_OF_SPEECH, token.get(PartOfSpeechAnnotation.class));
-                putFeature(features, Features.NER, token.ner());
-                putFeature(features, Features.WORD, token.word());
-
-                step.addAnnotation(ann);
+            // NLP processing
+            Annotation annotation = new Annotation(json.getTextValue());
+            snlp.annotate(annotation);
+            List<CoreMap> list = annotation.get(SentencesAnnotation.class);
+            for (CoreMap sent : list) {
+                for (CoreLabel token : sent.get(TokensAnnotation.class)) {
+                    JSONObject ann = json.newAnnotation();
+                    json.setStart(ann, token.beginPosition());
+                    json.setEnd(ann, token.endPosition());
+                    json.setWord(ann, token.value());
+                    json.setLemma(ann, token.lemma());
+                    json.setCategory(ann, token.get(PartOfSpeechAnnotation.class));
+                }
             }
+            return DataFactory.json(json.toString());
+        } else  if (discriminator == Types.TEXT) {
+            String textvalue = data.getPayload();
+            JsonTaggerSerialization json = new JsonTaggerSerialization();
+            json.setProducer(this.getClass().getName() + ":" + VERSION);
+            json.setType("tagger:stanford");
+            json.setTextValue(textvalue);
+
+            // NLP processing
+            Annotation annotation = new Annotation(json.getTextValue());
+            snlp.annotate(annotation);
+            List<CoreMap> list = annotation.get(SentencesAnnotation.class);
+            for (CoreMap sent : list) {
+                for (CoreLabel token : sent.get(TokensAnnotation.class)) {
+                    JSONObject ann = json.newAnnotation();
+                    json.setStart(ann, token.beginPosition());
+                    json.setEnd(ann, token.endPosition());
+                    json.setWord(ann, token.value());
+                    json.setLemma(ann, token.lemma());
+                    json.setCategory(ann, token.get(PartOfSpeechAnnotation.class));
+                }
+            }
+
+            return DataFactory.json(json.toString());
+
+        } else {
+            String name = DiscriminatorRegistry.get(discriminator);
+            String message = "Invalid input type. Expected JSON but found " + name;
+            logger.warn(message);
+            return DataFactory.error(message);
         }
-        container.getSteps().add(step);
-        return DataFactory.json(container.toJson());
 	}
 
 	@Override

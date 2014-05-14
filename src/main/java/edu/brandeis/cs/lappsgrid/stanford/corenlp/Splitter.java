@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONObject;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import org.anc.lapps.serialization.Container;
@@ -12,12 +13,14 @@ import org.anc.util.IDGenerator;
 import org.lappsgrid.api.Data;
 import org.lappsgrid.api.LappsException;
 import org.lappsgrid.core.DataFactory;
+import org.lappsgrid.discriminator.DiscriminatorRegistry;
 import org.lappsgrid.discriminator.Types;
 
 import edu.brandeis.cs.lappsgrid.stanford.corenlp.api.ISplitter;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.CoreMap;
+import org.lappsgrid.serialization.json.JsonSplitterSerialization;
 import org.lappsgrid.vocabulary.Annotations;
 import org.lappsgrid.vocabulary.Features;
 import org.lappsgrid.vocabulary.Metadata;
@@ -40,48 +43,66 @@ public class Splitter extends AbstractStanfordCoreNLPWebService implements
 	}
 
 	@Override
-	public Data execute(Data input) {
-        Container container = null;
-        try
+	public Data execute(Data data) {
+        long discriminator = data.getDiscriminator();
+        if (discriminator == Types.ERROR)
         {
-            container = getContainer(input);
-        }
-        catch (LappsException e)
+            return data;
+        } else if (discriminator == Types.JSON) {
+            String jsonstr = data.getPayload();
+            JsonSplitterSerialization json = new JsonSplitterSerialization(jsonstr);
+            json.setProducer(this.getClass().getName() + ":" + VERSION);
+            json.setType("splitter:stanford");
+
+
+            // NLP processing
+            Annotation annotation = new Annotation(json.getTextValue());
+            snlp.annotate(annotation);
+
+
+            List<CoreMap> list = annotation.get(SentencesAnnotation.class);
+            for (CoreMap sent : list) {
+                JSONObject jsonann = json.newAnnotation();
+                int start = sent.get(CoreAnnotations.CharacterOffsetBeginAnnotation.class);
+                int end = sent.get(CoreAnnotations.CharacterOffsetEndAnnotation.class);
+                json.setStart(jsonann, start);
+                json.setEnd(jsonann, end);
+                json.setSentence(jsonann, sent.toString());
+            }
+            return DataFactory.json(json.toString());
+
+        } else if (discriminator == Types.TEXT)
         {
-            return DataFactory.error(e.getMessage());
+            String text = data.getPayload();
+            JsonSplitterSerialization json = new JsonSplitterSerialization();
+            json.setTextValue(text);
+            json.setProducer(this.getClass().getName() + ":" + VERSION);
+            json.setType("splitter:stanford");
+
+            // NLP processing
+            Annotation annotation = new Annotation(json.getTextValue());
+            snlp.annotate(annotation);
+
+
+            List<CoreMap> list = annotation.get(SentencesAnnotation.class);
+            for (CoreMap sent : list) {
+                JSONObject jsonann = json.newAnnotation();
+                int start = sent.get(CoreAnnotations.CharacterOffsetBeginAnnotation.class);
+                int end = sent.get(CoreAnnotations.CharacterOffsetEndAnnotation.class);
+                json.setStart(jsonann, start);
+                json.setEnd(jsonann, end);
+                json.setSentence(jsonann, sent.toString());
+            }
+
+            return DataFactory.json(json.toString());
+        }
+        else {
+            String name = DiscriminatorRegistry.get(discriminator);
+            String message = "Invalid input type. Expected JSON but found " + name;
+            logger.warn(message);
+            return DataFactory.error(message);
         }
 
-        // steps
-        ProcessingStep step = new ProcessingStep();
-        // steps metadata
-//        step.getMetadata().put(Metadata.PRODUCED_BY, this.getClass().getName()  + ":" + Version);
-//        step.getMetadata().put(Metadata.CONTAINS, "Splitter");
-        step.addContains(Annotations.SENTENCE, this.getClass().getName() + ":" + Version, "chunk:sentence");
-
-        //
-        IDGenerator id = new IDGenerator();
-
-        // NLP processing
-        Annotation annotation = new Annotation(container.getText());
-        snlp.annotate(annotation);
-
-
-        List<CoreMap> sentences = annotation.get(SentencesAnnotation.class);
-        for (CoreMap sentence1 : sentences) {
-            org.anc.lapps.serialization.Annotation ann =
-                    new org.anc.lapps.serialization.Annotation();
-            ann.setId(id.generate("tok"));
-            ann.setLabel(Annotations.SENTENCE);
-
-            Map<String, String> features = ann.getFeatures();
-            String escaped = sentence1.toString();
-            escaped = escaped.replaceAll("\n", "\\n");
-            putFeature(features, "sentence", escaped);
-
-            step.addAnnotation(ann);
-        }
-        container.getSteps().add(step);
-        return DataFactory.json(container.toJson());
 	}
 
 	@Override

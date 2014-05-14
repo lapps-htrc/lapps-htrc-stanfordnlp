@@ -7,6 +7,7 @@ import org.lappsgrid.api.Data;
 import org.lappsgrid.discriminator.Types;
 import org.lappsgrid.vocabulary.Metadata;
 
+import org.json.JSONObject;
 import edu.brandeis.cs.lappsgrid.stanford.corenlp.api.ICoreference;
 import edu.stanford.nlp.dcoref.CorefChain;
 import edu.stanford.nlp.dcoref.CorefCoreAnnotations.CorefChainAnnotation;

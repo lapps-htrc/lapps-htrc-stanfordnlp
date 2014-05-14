@@ -57,8 +57,8 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.8.1</version>
+            <scope>test</scope>
 		</dependency>
-
 		<!-- BEGIN LappsGrid -->
 		<dependency>
 			<groupId>org.lappsgrid</groupId>
@@ -75,11 +75,11 @@
 			<artifactId>discriminator</artifactId>
 			<version>${lapps.discriminator}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.anc.lapps</groupId>
-			<artifactId>util</artifactId>
-			<version>${lapps.util}</version>
-		</dependency>
+		<!--<dependency>-->
+			<!--<groupId>org.anc.lapps</groupId>-->
+			<!--<artifactId>util</artifactId>-->
+			<!--<version>${lapps.util}</version>-->
+		<!--</dependency>-->
 		<dependency>
 			<groupId>org.anc.lapps</groupId>
 			<artifactId>serialization</artifactId>
@@ -123,7 +123,14 @@
 			<artifactId>slf4j-api</artifactId>
 			<version>1.7.5</version>
 		</dependency>
-	</dependencies>
+
+        <!--- JSON Support -->
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20140107</version>
+        </dependency>
+    </dependencies>
 
 	<build>
 		<!--<finalName>stanfordnlp-web-service</finalName>-->
