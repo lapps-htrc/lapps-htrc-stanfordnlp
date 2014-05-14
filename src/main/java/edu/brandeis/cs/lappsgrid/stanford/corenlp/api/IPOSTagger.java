@@ -17,7 +17,7 @@ public interface IPOSTagger extends WebService {
 	public static final String PROP_COMPNENT_MODEL__Perceptron = "POS-Tagger";
 	
 	public static final long [] TYPES_REQUIRES = new long[] { Types.TOKEN  };
-	public static final long [] TYPES_PRODUCES = new long[] { Types.STANFORD, Types.DOCUMENT, Types.TOKEN, Types.POS  };
+	public static final long [] TYPES_PRODUCES = new long[] { Types.STANFORD, Types.POS, Types.JSON };
 
 	  /**
 	   * Assigns the sentence of tokens pos tags.
