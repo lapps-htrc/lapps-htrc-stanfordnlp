@@ -5,7 +5,7 @@ import java.io.StringWriter;
 import java.util.List;
 import java.util.Map;
 
-import org.json.JSONObject;
+import org.lappsgrid.serialization.json.JSONObject;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import org.anc.lapps.serialization.Container;

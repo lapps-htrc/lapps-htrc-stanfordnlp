@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.json.JSONObject;
+import org.lappsgrid.serialization.json.JSONObject;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import org.anc.lapps.serialization.Container;
 import org.anc.lapps.serialization.ProcessingStep;

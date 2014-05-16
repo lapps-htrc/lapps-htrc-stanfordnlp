@@ -20,12 +20,12 @@ import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.CoreMap;
+import org.lappsgrid.serialization.json.JSONObject;
 import org.lappsgrid.serialization.json.JsonTaggerSerialization;
 import org.lappsgrid.vocabulary.Annotations;
 import org.lappsgrid.vocabulary.Features;
 import org.lappsgrid.vocabulary.Metadata;
 
-import org.json.JSONObject;
 
 public class POSTagger extends AbstractStanfordCoreNLPWebService implements
 		IPOSTagger {
