@@ -83,7 +83,7 @@ public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService
                         json.setEnd(ann, token.endPosition());
                         json.setWord(ann, token.value());
                         json.setLemma(ann, token.lemma());
-                        json.setCategory(ann, token.get(CoreAnnotations.PartOfSpeechAnnotation.class));
+                        json.setCategory(ann, capitalize(token.get(CoreAnnotations.PartOfSpeechAnnotation.class)));
                     }
                 }
             }
@@ -110,7 +110,7 @@ public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService
                         json.setEnd(ann, token.endPosition());
                         json.setWord(ann, token.value());
                         json.setLemma(ann, token.lemma());
-                        json.setCategory(ann, token.get(CoreAnnotations.PartOfSpeechAnnotation.class));
+                        json.setCategory(ann, capitalize(token.get(CoreAnnotations.PartOfSpeechAnnotation.class)));
                     }
                 }
             }
@@ -123,6 +123,11 @@ public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService
             return DataFactory.error(message);
         }
 	}
+
+    public static String capitalize(String s) {
+        if (s == null || s.length() == 0) return s;
+        return s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase();
+    }
 
 	
 	@Override
