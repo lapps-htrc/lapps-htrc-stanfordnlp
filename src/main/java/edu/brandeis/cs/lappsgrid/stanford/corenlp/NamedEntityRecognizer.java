@@ -83,7 +83,9 @@ public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService
                         json.setEnd(ann, token.endPosition());
                         json.setWord(ann, token.value());
                         json.setLemma(ann, token.lemma());
-                        json.setCategory(ann, capitalize(token.get(CoreAnnotations.PartOfSpeechAnnotation.class)));
+                        String cat = capitalize(token.get(CoreAnnotations.PartOfSpeechAnnotation.class));
+                        json.setCategory(ann, cat);
+                        json.newContain(cat);
                     }
                 }
             }
@@ -110,7 +112,9 @@ public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService
                         json.setEnd(ann, token.endPosition());
                         json.setWord(ann, token.value());
                         json.setLemma(ann, token.lemma());
-                        json.setCategory(ann, capitalize(token.get(CoreAnnotations.PartOfSpeechAnnotation.class)));
+                        String cat = capitalize(token.get(CoreAnnotations.PartOfSpeechAnnotation.class));
+                        json.setCategory(ann, cat);
+                        json.newContain(cat);
                     }
                 }
             }
