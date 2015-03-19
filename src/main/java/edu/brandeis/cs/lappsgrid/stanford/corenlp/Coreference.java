@@ -1,18 +1,8 @@
 package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
-import java.util.Map;
-
-import org.anc.lapps.serialization.ProcessingStep;
-import org.lappsgrid.api.Data;
-import org.lappsgrid.discriminator.Types;
-import org.lappsgrid.vocabulary.Metadata;
-
-import org.lappsgrid.serialization.json.JSONObject;
+import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 import edu.brandeis.cs.lappsgrid.stanford.corenlp.api.ICoreference;
-import edu.stanford.nlp.dcoref.CorefChain;
-import edu.stanford.nlp.dcoref.CorefCoreAnnotations.CorefChainAnnotation;
-import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import org.lappsgrid.serialization.json.LIFJsonSerialization;
 
 public class Coreference extends AbstractStanfordCoreNLPWebService implements
 		ICoreference {
@@ -21,46 +11,42 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
 		this.init(PROP_CORERENCE);
 	}
 
-	@Override
-	public long[] requires() {
-		return TYPES_REQUIRES;
-	}
+    @Override
+    public String execute(LIFJsonSerialization json) throws StanfordWebServiceException {
+        return null;
+    }
 
-	@Override
-	public long[] produces() {
-		return TYPES_PRODUCES;
-	}
-
-	@Override
-	public Data configure(Data arg0) {
-		return null;
-	}
-
-	@Override
-	public Data execute(Data input) {
-		
-		Data ret = null;
-		long inputType = input.getDiscriminator();
-		if (inputType == Types.ERROR)
-		{
-			return input;
-		}
-	    StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
-	    // Requires Text?
-	    
-	    Annotation document = new Annotation(input.getPayload());
-	    pipeline.annotate(document);
-	    Map<Integer, CorefChain> graph = document.get(CorefChainAnnotation.class);
-	    ProcessingStep step = new ProcessingStep();
-        putFeature(step.getMetadata(), Metadata.PRODUCED_BY, "Stanford NER");
-//	    pipeline.prettyPrint(d, os);
-	    
-	    
-	    
-//	    pipeline.
-//	    return data;
-	    return null;
-	}
+    @Override
+    public String getMetadata() {
+        return null;
+    }
+//
+//
+//	@Override
+//	public Data execute(Data input) {
+//
+//		Data ret = null;
+//		long inputType = input.getDiscriminator();
+//		if (inputType == Types.ERROR)
+//		{
+//			return input;
+//		}
+//	    StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
+//	    // Requires Text?
+//
+//	    Annotation document = new Annotation(input.getPayload());
+//	    pipeline.annotate(document);
+//	    Map<Integer, CorefChain> graph = document.get(CorefChainAnnotation.class);
+//	    ProcessingStep step = new ProcessingStep();
+//        putFeature(step.getMetadata(), Metadata.PRODUCED_BY, "Stanford NER");
+////	    pipeline.prettyPrint(d, os);
+//
+//
+//
+////	    pipeline.
+////	    return data;
+//	    return null;
+//	}
 
 	// public static void main(String[]args) {
 	// // creates a StanfordCoreNLP object, with POS tagging, lemmatization,

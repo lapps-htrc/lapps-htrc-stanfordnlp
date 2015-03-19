@@ -1,12 +1,10 @@
 package edu.brandeis.cs.lappsgrid.stanford.corenlp.api;
 
 
-import org.lappsgrid.api.WebService;
+import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
+
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
-import org.lappsgrid.discriminator.Types;
-
-import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 
 /**
  * <i>IOpenNLP.java</i> Language Application Grids (<b>LAPPS</b>)
@@ -26,25 +24,16 @@ import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
  * @author Chunqi Shi ( <i>shicq@cs.brandeis.edu</i> )<br>Nov 19, 2013<br>
  * 
  */
-public interface IStanford extends WebService {
-	public static final long [] TYPES_REQUIRES = new long[] { Types.STANFORD, Types.TEXT };
-	public static final long [] TYPES_PRODUCES = new long[] { Types.STANFORD, Types.SENTENCE };
-	public static final String FILE_PROPERTIES = "opennlp-web-service.properties";
-	
+public interface IStanford {
 	public static final String SPLITTER_LINE = "\n";
 	
 	/**
 	 * chunkerMET
-	 * @see opennlp.tools.cmdline.BasicCmdLineTool
-	 * @see opennlp.tools.cmdline.chunker.ChunkerConverterTool
 	 */
 	public String[] chunkerMETArr(String[] lines) throws StanfordWebServiceException;
 	
 	/**
-	 * 
-	 * @param lines: splitter mark is "\n" {@link SPLITTER_LINE} 
-	 * @return
-	 * @throws OpenNLPWebServiceException
+	 *
 	 */
 	public String[] chunkerMET(String lineswithsplitter) throws StanfordWebServiceException;
 	
@@ -77,8 +66,6 @@ public interface IStanford extends WebService {
 	
 	/**
 	 * Parser
-	 * @see opennlp.tools.cmdline.BasicCmdLineTool
-	 * @see opennlp.tools.cmdline.parser.ParserTool
 	 */
 	public String[] parserArr(String[] lines) throws StanfordWebServiceException;
 	
@@ -87,8 +74,6 @@ public interface IStanford extends WebService {
 	
 	/**
 	 * SentenceDetector
-	 * @see opennlp.tools.cmdline.BasicCmdLineTool
-	 * @see opennlp.tools.cmdline.sentdetect.SentenceDetectorTool
 	 */
 	public String[] sentenceDetectorArr(String[] lines) throws StanfordWebServiceException;
 	
@@ -97,8 +82,6 @@ public interface IStanford extends WebService {
 	
 	/**
 	 * SimpleTokenizer
-	 * @see opennlp.tools.cmdline.BasicCmdLineTool
-	 * @see opennlp.tools.cmdline.tokenizer.SimpleTokenizerTool
 	 */
 	public String[] simpleTokenizerArr(String[] lines) throws StanfordWebServiceException;
 	
@@ -106,8 +89,6 @@ public interface IStanford extends WebService {
 	
 	/**
 	 * TokenizerME
-	 * @see opennlp.tools.cmdline.BasicCmdLineTool
-	 * @see opennlp.tools.cmdline.tokenizer.TokenizerMETool
 	 */
 	public String[] tokenizerMEArr(String[] lines) throws StanfordWebServiceException;
 	
@@ -115,8 +96,6 @@ public interface IStanford extends WebService {
 	
 	/**
 	 * TokenNameFinder
-	 * @see opennlp.tools.cmdline.BasicCmdLineTool
-	 * @see opennlp.tools.cmdline.namefind.TokenNameFinderTool
 	 */
 	public String[] tokenNameFinderArr(String[] lines) throws StanfordWebServiceException;
 	

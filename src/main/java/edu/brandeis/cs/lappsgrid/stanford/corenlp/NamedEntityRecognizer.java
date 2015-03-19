@@ -1,35 +1,19 @@
 package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.List;
-import java.util.Map;
-
-import org.lappsgrid.serialization.json.JSONObject;
-import edu.stanford.nlp.ling.CoreAnnotations;
-import edu.stanford.nlp.trees.Tree;
-import edu.stanford.nlp.trees.TreeCoreAnnotations;
-import org.anc.lapps.serialization.Container;
-import org.anc.lapps.serialization.ProcessingStep;
-import org.anc.util.IDGenerator;
-import org.lappsgrid.api.Data;
-import org.lappsgrid.api.LappsException;
-import org.lappsgrid.core.DataFactory;
-import org.lappsgrid.discriminator.DiscriminatorRegistry;
-import org.lappsgrid.discriminator.Types;
-
+import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 import edu.brandeis.cs.lappsgrid.stanford.corenlp.api.INamedEntityRecognizer;
+import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations.NamedEntityTagAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.CoreMap;
-import org.lappsgrid.serialization.json.JsonNERSerialization;
-import org.lappsgrid.vocabulary.Annotations;
-import org.lappsgrid.vocabulary.Features;
-import org.lappsgrid.vocabulary.Metadata;
+import org.lappsgrid.discriminator.Discriminators;
+import org.lappsgrid.serialization.json.JsonObj;
+import org.lappsgrid.serialization.json.LIFJsonSerialization;
+
+import java.util.List;
 
 /**
  * 
@@ -42,91 +26,110 @@ import org.lappsgrid.vocabulary.Metadata;
  */
 public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService
 		implements INamedEntityRecognizer {
+
+
 	public NamedEntityRecognizer() {
 		this.init(PROP_TOKENIZE, PROP_SENTENCE_SPLIT, PROP_POS_TAG, PROP_LEMMA, PROP_NER);
 	}
 
-	@Override
-	public long[] requires() {
-		return TYPES_REQUIRES;
-	}
+    @Override
+    public String execute(LIFJsonSerialization json) throws StanfordWebServiceException {
 
-	@Override
-	public long[] produces() {
-		return TYPES_PRODUCES;
-	}
-
-	@Override
-	public Data execute(Data data) {
-
-        long discriminator = data.getDiscriminator();
-        if (discriminator == Types.ERROR)
-        {
-            return data;
-        } else if (discriminator == Types.JSON) {
-
-            String jsonstr = data.getPayload();
-            JsonNERSerialization json = new JsonNERSerialization(jsonstr);
-            json.setProducer(this.getClass().getName() + ":" + VERSION);
-            json.setType("ner:stanford");
-
-            // NLP processing
-            Annotation annotation = new Annotation(json.getTextValue());
-            snlp.annotate(annotation);
-            List<CoreMap> list = annotation.get(SentencesAnnotation.class);
-            for (CoreMap sent : list) {
-                for (CoreLabel token : sent.get(TokensAnnotation.class)) {
-                    String  ner = token.ner();
-                    if(ner != null) {
-                        JSONObject ann = json.newAnnotationWithType(ner);
-                        json.setStart(ann, token.beginPosition());
-                        json.setEnd(ann, token.endPosition());
-                        json.setWord(ann, token.value());
-                        json.setLemma(ann, token.lemma());
-                        String cat = capitalize(token.get(CoreAnnotations.PartOfSpeechAnnotation.class));
-                        json.setCategory(ann, cat);
-                        json.newContain(cat);
-                    }
+        String txt = json.getText();
+        JsonObj view = json.newView();
+        json.newContains(view, Discriminators.Uri.NE, "ner:stanford", this.getClass().getName() + ":" + VERSION);
+        // NLP processing
+        Annotation annotation = new Annotation(txt);
+        snlp.annotate(annotation);
+        List<CoreMap> list = annotation.get(SentencesAnnotation.class);
+        for (CoreMap sent : list) {
+            for (CoreLabel token : sent.get(TokensAnnotation.class)) {
+                String  ner = token.ner();
+                if(ner != null) {
+                    JsonObj ann = json.newAnnotation(view, ner);
+                    json.setStart(ann, token.beginPosition());
+                    json.setEnd(ann, token.endPosition());
+                    json.setWord(ann, token.value());
+                    json.setLemma(ann, token.lemma());
+                    String cat = capitalize(token.get(CoreAnnotations.PartOfSpeechAnnotation.class));
+                    json.setCategory(ann, cat);
                 }
             }
-
-            return DataFactory.json(json.toString());
-        } else if (discriminator == Types.TEXT)
-        {
-            String text = data.getPayload();
-            JsonNERSerialization json = new JsonNERSerialization();
-            json.setTextValue(text);
-            json.setProducer(this.getClass().getName() + ":" + VERSION);
-            json.setType("ner:stanford");
-
-            // NLP processing
-            Annotation annotation = new Annotation(json.getTextValue());
-            snlp.annotate(annotation);
-            List<CoreMap> list = annotation.get(SentencesAnnotation.class);
-            for (CoreMap sent : list) {
-                for (CoreLabel token : sent.get(TokensAnnotation.class)) {
-                    String  ner = token.ner();
-                    if(ner != null) {
-                        JSONObject ann = json.newAnnotationWithType(ner);
-                        json.setStart(ann, token.beginPosition());
-                        json.setEnd(ann, token.endPosition());
-                        json.setWord(ann, token.value());
-                        json.setLemma(ann, token.lemma());
-                        String cat = capitalize(token.get(CoreAnnotations.PartOfSpeechAnnotation.class));
-                        json.setCategory(ann, cat);
-                        json.newContain(cat);
-                    }
-                }
-            }
-            return DataFactory.json(json.toString());
-
-        } else {
-            String name = DiscriminatorRegistry.get(discriminator);
-            String message = "Invalid input type. Expected JSON but found " + name;
-            logger.warn(message);
-            return DataFactory.error(message);
         }
-	}
+        return json.toString();
+    }
+
+//	@Override
+//	public Data execute(Data data) {
+//
+//        long discriminator = data.getDiscriminator();
+//        if (discriminator == Types.ERROR)
+//        {
+//            return data;
+//        } else if (discriminator == Types.JSON) {
+//
+//            String jsonstr = data.getPayload();
+//            JsonNERSerialization json = new JsonNERSerialization(jsonstr);
+//            json.setProducer(this.getClass().getName() + ":" + VERSION);
+//            json.setType("ner:stanford");
+//
+//            // NLP processing
+//            Annotation annotation = new Annotation(json.getTextValue());
+//            snlp.annotate(annotation);
+//            List<CoreMap> list = annotation.get(SentencesAnnotation.class);
+//            for (CoreMap sent : list) {
+//                for (CoreLabel token : sent.get(TokensAnnotation.class)) {
+//                    String  ner = token.ner();
+//                    if(ner != null) {
+//                        JSONObject ann = json.newAnnotationWithType(ner);
+//                        json.setStart(ann, token.beginPosition());
+//                        json.setEnd(ann, token.endPosition());
+//                        json.setWord(ann, token.value());
+//                        json.setLemma(ann, token.lemma());
+//                        String cat = capitalize(token.get(CoreAnnotations.PartOfSpeechAnnotation.class));
+//                        json.setCategory(ann, cat);
+//                        json.newContain(cat);
+//                    }
+//                }
+//            }
+//
+//            return DataFactory.json(json.toString());
+//        } else if (discriminator == Types.TEXT)
+//        {
+//            String text = data.getPayload();
+//            JsonNERSerialization json = new JsonNERSerialization();
+//            json.setTextValue(text);
+//            json.setProducer(this.getClass().getName() + ":" + VERSION);
+//            json.setType("ner:stanford");
+//
+//            // NLP processing
+//            Annotation annotation = new Annotation(json.getTextValue());
+//            snlp.annotate(annotation);
+//            List<CoreMap> list = annotation.get(SentencesAnnotation.class);
+//            for (CoreMap sent : list) {
+//                for (CoreLabel token : sent.get(TokensAnnotation.class)) {
+//                    String  ner = token.ner();
+//                    if(ner != null) {
+//                        JSONObject ann = json.newAnnotationWithType(ner);
+//                        json.setStart(ann, token.beginPosition());
+//                        json.setEnd(ann, token.endPosition());
+//                        json.setWord(ann, token.value());
+//                        json.setLemma(ann, token.lemma());
+//                        String cat = capitalize(token.get(CoreAnnotations.PartOfSpeechAnnotation.class));
+//                        json.setCategory(ann, cat);
+//                        json.newContain(cat);
+//                    }
+//                }
+//            }
+//            return DataFactory.json(json.toString());
+//
+//        } else {
+//            String name = DiscriminatorRegistry.get(discriminator);
+//            String message = "Invalid input type. Expected JSON but found " + name;
+//            logger.warn(message);
+//            return DataFactory.error(message);
+//        }
+//	}
 
     public static String capitalize(String s) {
         if (s == null || s.length() == 0) return s;
@@ -160,4 +163,8 @@ public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService
 		return sb.substring(0, sb.length() - 1);
 	}
 
+    @Override
+    public String getMetadata() {
+        return null;
+    }
 }

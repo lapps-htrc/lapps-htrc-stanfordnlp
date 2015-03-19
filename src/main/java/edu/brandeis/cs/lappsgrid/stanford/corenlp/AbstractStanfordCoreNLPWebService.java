@@ -1,20 +1,18 @@
 package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.anc.lapps.serialization.Container;
-import org.lappsgrid.api.Data;
-import org.lappsgrid.api.LappsException;
+import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import org.lappsgrid.api.WebService;
-import org.lappsgrid.core.DataFactory;
-import org.lappsgrid.discriminator.DiscriminatorRegistry;
-import org.lappsgrid.discriminator.Types;
+import org.lappsgrid.discriminator.Discriminators;
+import org.lappsgrid.serialization.json.LIFJsonSerialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <a href="http://nlp.stanford.edu/software/corenlp.shtml" target="_blank">
@@ -36,7 +34,7 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
     static protected ConcurrentHashMap<String, StanfordCoreNLP> cache =
             new ConcurrentHashMap<String, StanfordCoreNLP>();
 
-    public static final String VERSION = "0.0.4";
+    public static final String VERSION = "2.0.0";
 
 	public static final String PROP_TOKENIZE = "tokenize";
 	public static final String PROP_SENTENCE_SPLIT = "ssplit";
@@ -92,28 +90,31 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
     }
 
 
-	@Override
-	public Data configure(Data input) {
-		return DataFactory.ok();
-	}
 
-    public static final Container getContainer(Data input) throws LappsException
-    {
-        long type = input.getDiscriminator();
-        if (type == Types.ERROR) {
-            // Data objects with an ERROR discriminator should not be
-            // passed in.
-            throw new LappsException(input.getPayload());
+    @Override
+    public String execute(String s) {
+        LIFJsonSerialization json = null;
+        try{
+            s = s.trim();
+            if (s.startsWith("{") && s.endsWith("}")) {
+                json = new LIFJsonSerialization();
+                json.setDiscriminator(s);
+                json.setDiscriminator(Discriminators.Uri.TEXT);
+            } else {
+                json = new LIFJsonSerialization(s);
+                if (json.getDiscriminator().equals(Discriminators.Uri.ERROR)) {
+                    return json.toString();
+                }
+            }
+            return execute(json);
+        }catch(Throwable th) {
+            json = new LIFJsonSerialization();
+            StringWriter sw = new StringWriter();
+            th.printStackTrace( new PrintWriter(sw));
+            json.setError(th.getMessage(), sw.toString());
+            return json.toString();
         }
-        else if (type == Types.TEXT) {
-            Container container = new Container();
-            container.setText(input.getPayload());
-            return container;
-        }
-        else if (type == Types.JSON) {
-            return new Container(input.getPayload());
-        }
-        String typeName = DiscriminatorRegistry.get(type);
-        throw new LappsException("Unexpected Data object type: " + typeName);
     }
+
+    public abstract String execute(LIFJsonSerialization json) throws StanfordWebServiceException;
 }
