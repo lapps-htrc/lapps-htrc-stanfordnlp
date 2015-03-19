@@ -8,7 +8,7 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
 		ICoreference {
 
 	public Coreference() {
-		this.init(PROP_CORERENCE);
+		this.init(PROP_TOKENIZE,PROP_SENTENCE_SPLIT,PROP_POS_TAG,PROP_CORERENCE);
 	}
 
     @Override
