@@ -1,5 +1,6 @@
 package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
+import edu.brandeis.cs.lappsgrid.Version;
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 import edu.brandeis.cs.lappsgrid.stanford.corenlp.api.ISplitter;
 import edu.stanford.nlp.ling.CoreAnnotations;
@@ -26,7 +27,7 @@ public class Splitter extends AbstractStanfordCoreNLPWebService implements
 
         JsonObj view = json.newView();
         json.newContains(view, Discriminators.Uri.SENTENCE,
-                "splitter:stanford", this.getClass().getName() + ":" + VERSION);
+                "splitter:stanford", this.getClass().getName() + ":" + Version.getVersion());
         // NLP processing
         Annotation annotation = new Annotation(txt);
         snlp.annotate(annotation);
@@ -120,9 +121,4 @@ public class Splitter extends AbstractStanfordCoreNLPWebService implements
 		}
 		return list.toArray(new String[list.size()]);
 	}
-
-    @Override
-    public String getMetadata() {
-        return null;
-    }
 }

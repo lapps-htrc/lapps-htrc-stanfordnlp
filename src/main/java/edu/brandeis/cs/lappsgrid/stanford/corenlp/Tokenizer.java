@@ -1,5 +1,6 @@
 package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
+import edu.brandeis.cs.lappsgrid.Version;
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 import edu.brandeis.cs.lappsgrid.stanford.corenlp.api.ITokenizer;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
@@ -28,7 +29,7 @@ public class Tokenizer extends AbstractStanfordCoreNLPWebService implements
         JsonObj view = json.newView();
 
         json.newContains(view, Discriminators.Uri.TOKEN,
-                "tokenizer:stanford", this.getClass().getName() + ":" + VERSION);
+                "tokenizer:stanford", this.getClass().getName() + ":" + Version.getVersion());
         json.setIdHeader("tok");
         // NLP processing
         Annotation annotation = new Annotation(txt);
@@ -123,8 +124,4 @@ public class Tokenizer extends AbstractStanfordCoreNLPWebService implements
 		return list.toArray(new String[list.size()]);
 	}
 
-    @Override
-    public String getMetadata() {
-        return null;
-    }
 }

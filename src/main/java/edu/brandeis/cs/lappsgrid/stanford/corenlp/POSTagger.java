@@ -1,5 +1,6 @@
 package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
+import edu.brandeis.cs.lappsgrid.Version;
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 import edu.brandeis.cs.lappsgrid.stanford.corenlp.api.IPOSTagger;
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
@@ -31,7 +32,7 @@ public class POSTagger extends AbstractStanfordCoreNLPWebService implements
         JsonObj view = json.newView();
 
         json.newContains(view, Discriminators.Uri.TOKEN,
-                "tagger:stanford", this.getClass().getName() + ":" + VERSION);
+                "tagger:stanford", this.getClass().getName() + ":" + Version.getVersion());
         json.setIdHeader("tok");
 
         // NLP processing
@@ -132,8 +133,4 @@ public class POSTagger extends AbstractStanfordCoreNLPWebService implements
 	}
 
 
-    @Override
-    public String getMetadata() {
-        return null;
-    }
 }

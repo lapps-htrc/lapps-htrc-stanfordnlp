@@ -1,5 +1,6 @@
 package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
+import edu.brandeis.cs.lappsgrid.Version;
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 import edu.brandeis.cs.lappsgrid.stanford.corenlp.api.IParser;
 import edu.stanford.nlp.ling.CoreAnnotations;
@@ -26,7 +27,7 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
     public String execute(LIFJsonSerialization json) throws StanfordWebServiceException {
         String txt = json.getText();
         JsonObj view  = json.newView();
-        json.newContains(view, "Parser", "parser:stanford", this.getClass().getName() + ":" + VERSION);
+        json.newContains(view, "Parser", "parser:stanford", this.getClass().getName() + ":" + Version.getVersion());
 
         // NLP processing
         Annotation annotation = new Annotation(txt);
@@ -138,8 +139,4 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
 		return sw.toString();
 	}
 
-    @Override
-    public String getMetadata() {
-        return null;
-    }
 }

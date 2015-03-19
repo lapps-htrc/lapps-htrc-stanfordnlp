@@ -1,5 +1,6 @@
 package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
+import edu.brandeis.cs.lappsgrid.Version;
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 import edu.brandeis.cs.lappsgrid.stanford.corenlp.api.INamedEntityRecognizer;
 import edu.stanford.nlp.ling.CoreAnnotations;
@@ -37,7 +38,8 @@ public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService
 
         String txt = json.getText();
         JsonObj view = json.newView();
-        json.newContains(view, Discriminators.Uri.NE, "ner:stanford", this.getClass().getName() + ":" + VERSION);
+        json.newContains(view, Discriminators.Uri.NE,
+                "ner:stanford", this.getClass().getName() + ":" + Version.getVersion());
         // NLP processing
         Annotation annotation = new Annotation(txt);
         snlp.annotate(annotation);
@@ -163,8 +165,4 @@ public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService
 		return sb.substring(0, sb.length() - 1);
 	}
 
-    @Override
-    public String getMetadata() {
-        return null;
-    }
 }

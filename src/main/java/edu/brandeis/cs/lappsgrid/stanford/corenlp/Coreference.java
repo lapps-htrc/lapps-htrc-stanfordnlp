@@ -8,7 +8,8 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
 		ICoreference {
 
 	public Coreference() {
-		this.init(PROP_TOKENIZE,PROP_SENTENCE_SPLIT,PROP_POS_TAG,PROP_CORERENCE);
+		this.init(PROP_TOKENIZE,PROP_SENTENCE_SPLIT,
+                PROP_POS_TAG, PROP_LEMMA, PROP_NER,PROP_CORERENCE);
 	}
 
     @Override
@@ -16,10 +17,6 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
         return null;
     }
 
-    @Override
-    public String getMetadata() {
-        return null;
-    }
 //
 //
 //	@Override
