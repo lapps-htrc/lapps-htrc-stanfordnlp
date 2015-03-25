@@ -21,11 +21,12 @@ public class TestCoreference extends TestService {
 	Coreference tokenizer;
 
 	public TestCoreference() throws StanfordWebServiceException {
-		tokenizer = new Coreference();
+//		tokenizer = new Coreference();
 	}
 	
 	@Test
 	public void testCoref() {
+
 	}
 
     @Test

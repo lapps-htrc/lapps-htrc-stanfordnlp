@@ -9,7 +9,7 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
 
 	public Coreference() {
 		this.init(PROP_TOKENIZE,PROP_SENTENCE_SPLIT,
-                PROP_POS_TAG, PROP_LEMMA, PROP_NER,PROP_CORERENCE);
+                PROP_POS_TAG, PROP_LEMMA, PROP_NER, PROP_PARSE, PROP_CORERENCE);
 	}
 
     @Override
