@@ -41,7 +41,6 @@ public class Tokenizer extends AbstractStanfordCoreNLPWebService implements
                 json.setStart(ann, token.beginPosition());
                 json.setEnd(ann, token.endPosition());
                 json.setWord(ann, token.value());
-                json.setLemma(ann, token.lemma());
             }
         }
         return json.toString();
