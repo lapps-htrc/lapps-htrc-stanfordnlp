@@ -97,24 +97,25 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
         try{
             s = s.trim();
             if (s.startsWith("{") && s.endsWith("}")) {
-                json = new LIFJsonSerialization();
-                json.setDiscriminator(s);
-                json.setDiscriminator(Discriminators.Uri.TEXT);
-            } else {
                 json = new LIFJsonSerialization(s);
                 if (json.getDiscriminator().equals(Discriminators.Uri.ERROR)) {
                     return json.toString();
                 }
+            } else {
+                json = new LIFJsonSerialization();
+                json.setText(s);
             }
             return execute(json);
         }catch(Throwable th) {
             json = new LIFJsonSerialization();
             StringWriter sw = new StringWriter();
             th.printStackTrace( new PrintWriter(sw));
-            json.setError(th.getMessage(), sw.toString());
+            json.setError(th.toString(), sw.toString());
+            System.err.println(sw.toString());
             return json.toString();
         }
     }
+
 
     public abstract String execute(LIFJsonSerialization json) throws StanfordWebServiceException;
 
@@ -142,9 +143,8 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
             error.put("error", "NOT EXIST: "+resName);
             error.put("message", th.getMessage());
             StringWriter sw = new StringWriter();
-            th.printStackTrace( new PrintWriter(sw));
-            error.put("stacktrace", sw.toString());
-            json.put("payload", error);
+            th.printStackTrace(new PrintWriter(sw));
+            System.err.println(sw.toString());
             return json.toString();
         }
     }

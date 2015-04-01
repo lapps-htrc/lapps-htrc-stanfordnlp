@@ -24,7 +24,7 @@ public class LIFJsonSerialization {
     JsonObj json = null;
 
     String idHeader = "";
-    static int id = 0;
+    int id = 0;
 
     public void setIdHeader(String idh) {
         idHeader = idh;
@@ -63,11 +63,20 @@ public class LIFJsonSerialization {
         if (discriminator.equals(Discriminators.Uri.TEXT)) {
             text = new JsonObj();
             text.put("@value", json.getString("payload"));
+            // reinitialize other parts.
+            discriminator = Discriminators.Uri.JSON_LD;
+            payload = new JsonObj();
+            metadata =  new JsonObj();
+            views = new JsonArr();
         } else if(discriminator.equals(Discriminators.Uri.JSON_LD)) {
             payload = json.getJsonObj("payload");
             text = payload.getJsonObj("text");
             metadata = payload.getJsonObj("metadata");
+            if (metadata == null)
+                metadata = new JsonObj();
             views =  payload.getJsonArr("views");
+            if (views == null)
+                views = new JsonArr();
         }
     }
 
@@ -182,15 +191,16 @@ public class LIFJsonSerialization {
     public void setLemma(JsonObj annotation, String lemma) {
         setFeature(annotation, Features.Token.LEMMA, lemma);
     }
-    public void setCategory(JsonObj annotation, String category) {
-        setFeature(annotation, "category", category);
-    }
-
 
     public void setWord(JsonObj annotation, String word) {
         setFeature(annotation, "word", word);
     }
-    public List<JsonObj> findLastAnnotations() {
+
+    public void setCategory(JsonObj annotation, String word) {
+        setFeature(annotation, "category", word);
+    }
+
+    public List<JsonObj> getLastViewAnnotations() {
         ArrayList<JsonObj> lastAnnotations = null;
         if(views.length() > 0) {
             for(int i = views.length() - 1; i >= 0; i--) {
@@ -230,6 +240,23 @@ public class LIFJsonSerialization {
         setFeature(annotation, "sentence", sent);
     }
 
+
+    public String getLabel(JsonObj annotation) {
+        return annotation.getString("label");
+    }
+
+    public String getId(JsonObj annotation) {
+        return annotation.getString("id");
+    }
+
+    public void setLabel(JsonObj annotation, String label) {
+        annotation.put("label", label);
+    }
+
+    public void setId(JsonObj annotation, String id) {
+        annotation.put("id", id);
+    }
+
     public void setPOSTag(JsonObj annotation, String posTag) {
         setFeature(annotation, "pos", posTag);
     }
@@ -239,9 +266,33 @@ public class LIFJsonSerialization {
 
     public void setError(String msg, String stacktrace) {
         this.setDiscriminator(Discriminators.Uri.ERROR);
-        error.put("message", msg );
-        error.put("stacktrace", stacktrace);
+        JsonObj val = new JsonObj();
+        val.put("@value", msg);
+        val.put("stacktrace", stacktrace);
+        error.put("text",  val);
     }
+
+//    public List<JsonObj> getLastViewAnnotations(String lastAnnotationType) {
+//        ArrayList<JsonObj> lastAnnotations = null;
+//        if(views.length() > 0) {
+//            for(int i = views.length() - 1; i >= 0; i--) {
+//                JsonObj lastView = views.getJsonObj(i);
+//                JsonObj lastViewMeta = lastView.getJsonObj("metadata");
+//                JsonArr lastViewAnnotations = lastView.getJsonArr("annotations");
+//                JsonObj lastViewContains = lastViewMeta.getJsonObj("contains");
+//                if (lastViewContains.has(lastAnnotationType)) {
+//                    lastAnnotations = new ArrayList<JsonObj>(lastViewAnnotations.length());
+//                    for(int j = 0; j < lastViewAnnotations.length(); j++) {
+//                        JsonObj lastStepAnnotation = lastViewAnnotations.getJsonObj(j);
+//                        lastAnnotations.add(lastStepAnnotation);
+//                    }
+//                    break;
+//                }
+//            }
+//        }
+//        return lastAnnotations;
+//    }
+
 
     public void setFeature(JsonObj annotation, String name,  Object value) {
         JsonObj features = annotation.getJsonObj("features");

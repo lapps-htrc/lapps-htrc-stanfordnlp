@@ -4,6 +4,11 @@ import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 import edu.brandeis.cs.lappsgrid.stanford.corenlp.Splitter;
 import org.junit.Assert;
 import org.junit.Test;
+import org.lappsgrid.serialization.Data;
+import org.lappsgrid.serialization.Serializer;
+import org.lappsgrid.serialization.lif.Container;
+
+import java.util.Map;
 
 /**
  * <i>TestSplitter.java</i> Language Application Grids (<b>LAPPS</b>)
@@ -35,5 +40,19 @@ public class TestSplitter extends TestService {
     public void testExecute(){
 //        ret = splitter.execute(data);
 //        Assert.assertTrue(ret.getPayload().contains("by return email or by telephone"));
+
+        System.out.println("/-----------------------------------\\");
+        String json = splitter.execute(jsons.get("payload1.json"));
+        System.out.println(json);
+        Container container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
+
+        json = splitter.execute(jsons.get("payload2.json"));
+        System.out.println(json);
+        container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
+
+        json = splitter.execute(jsons.get("payload3.json"));
+        System.out.println(json);
+        container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
+        System.out.println("\\-----------------------------------/\n");
     }
 }

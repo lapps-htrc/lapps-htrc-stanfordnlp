@@ -4,6 +4,11 @@ import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 import edu.brandeis.cs.lappsgrid.stanford.corenlp.POSTagger;
 import org.junit.Assert;
 import org.junit.Test;
+import org.lappsgrid.serialization.Data;
+import org.lappsgrid.serialization.Serializer;
+import org.lappsgrid.serialization.lif.Container;
+
+import java.util.Map;
 
 /**
  * <i>TestPOSTagger.java</i> Language Application Grids (<b>LAPPS</b>)
@@ -31,11 +36,38 @@ public class TestPOSTagger extends TestService {
 	}
 
     @Test
-    public void testExecute(){
-//        ret = postagger.execute(data);
-////        System.out.println(ret.getPayload());
-//        Assert.assertTrue(ret.getPayload().contains("NN"));
-//        Assert.assertTrue(ret.getPayload().contains("by return email or by telephone"));
+    public void testExecute(){{
+
+        System.out.println("/-----------------------------------\\");
+
+        String json = postagger.execute("Good");
+        System.out.println(json);
+        Container container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
+
+
+        json = postagger.execute("Good Morning");
+        System.out.println(json);
+        container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
+
+        json = postagger.execute(jsons.get("payload1.json"));
+        System.out.println(json);
+        container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
+
+        json = postagger.execute(jsons.get("payload2.json"));
+        System.out.println(json);
+        container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
+
+        json = postagger.execute(jsons.get("payload3.json"));
+        System.out.println(json);
+        container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
+
+        json = postagger.execute(jsons.get("tokens.json"));
+        System.out.println(json);
+        container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
+
+
+        System.out.println("\\-----------------------------------/\n");
+    }
     }
 
 

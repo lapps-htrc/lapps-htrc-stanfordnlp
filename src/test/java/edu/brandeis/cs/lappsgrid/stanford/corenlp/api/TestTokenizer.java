@@ -4,6 +4,11 @@ import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 import edu.brandeis.cs.lappsgrid.stanford.corenlp.Tokenizer;
 import org.junit.Assert;
 import org.junit.Test;
+import org.lappsgrid.serialization.Data;
+import org.lappsgrid.serialization.Serializer;
+import org.lappsgrid.serialization.lif.Container;
+
+import java.util.Map;
 
 
 /**
@@ -33,8 +38,24 @@ public class TestTokenizer extends TestService {
 
     @Test
     public void testExecute(){
-//        ret = tokenizer.execute(data);
-//        Assert.assertTrue(ret.getPayload().contains("by return email or by telephone"));
-//        System.out.println(ret.getPayload());
+        System.out.println("/-----------------------------------\\");
+        String json = tokenizer.execute(jsons.get("payload1.json"));
+        System.out.println(json);
+
+        Container container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
+
+        json = tokenizer.execute(jsons.get("payload2.json"));
+        System.out.println(json);
+        container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
+
+        json = tokenizer.execute(jsons.get("payload3.json"));
+        System.out.println(json);
+        container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
+
+        json = tokenizer.execute(jsons.get("splitter.json"));
+        System.out.println(json);
+        container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
+
+        System.out.println("\\-----------------------------------/\n");
     }
 }
