@@ -38,6 +38,7 @@ public class Tokenizer extends AbstractStanfordCoreNLPWebService implements
         for (CoreMap sent : list) {
             for (CoreLabel token : sent.get(TokensAnnotation.class)) {
                 JsonObj ann = json.newAnnotation(view);
+                json.setLabel(ann, Discriminators.Uri.TOKEN);
                 json.setStart(ann, token.beginPosition());
                 json.setEnd(ann, token.endPosition());
                 json.setWord(ann, token.value());

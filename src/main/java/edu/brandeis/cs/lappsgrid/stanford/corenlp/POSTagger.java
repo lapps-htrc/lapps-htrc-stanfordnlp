@@ -29,7 +29,7 @@ public class POSTagger extends AbstractStanfordCoreNLPWebService implements
         String txt = json.getText();
         JsonObj view = json.newView();
 
-        json.newContains(view, Discriminators.Uri.TOKEN,
+        json.newContains(view, Discriminators.Uri.POS,
                 "tagger:stanford", this.getClass().getName() + ":" + Version.getVersion());
         json.setIdHeader("tok");
         // NLP processing
@@ -43,6 +43,7 @@ public class POSTagger extends AbstractStanfordCoreNLPWebService implements
                 json.setEnd(ann, token.endPosition());
                 json.setWord(ann, token.value());
                 json.setCategory(ann, token.get(PartOfSpeechAnnotation.class));
+                json.setLabel(ann, Discriminators.Uri.POS);
             }
         }
         return json.toString();

@@ -40,6 +40,7 @@ public class Splitter extends AbstractStanfordCoreNLPWebService implements
             json.setStart(jsonann, start);
             json.setEnd(jsonann, end);
             json.setSentence(jsonann, sent.toString());
+            json.setLabel(jsonann, Discriminators.Uri.SENTENCE);
         }
         return json.toString();
     }

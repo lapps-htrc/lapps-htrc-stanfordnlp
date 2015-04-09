@@ -53,7 +53,7 @@ public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService
                     json.setStart(ann, token.beginPosition());
                     json.setEnd(ann, token.endPosition());
                     json.setWord(ann, token.value());
-                    json.setLemma(ann, token.lemma());
+					json.setLabel(ann, Discriminators.Uri.NE);
                     json.setCategory(ann, ner);
                 }
             }
