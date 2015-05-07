@@ -1,8 +1,21 @@
 package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
+import edu.brandeis.cs.lappsgrid.Version;
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 import edu.brandeis.cs.lappsgrid.stanford.corenlp.api.ICoreference;
+import edu.stanford.nlp.dcoref.CorefChain;
+import edu.stanford.nlp.dcoref.CorefCoreAnnotations;
+import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.util.CoreMap;
+import org.lappsgrid.discriminator.Discriminators;
+import org.lappsgrid.serialization.json.JsonArr;
+import org.lappsgrid.serialization.json.JsonObj;
 import org.lappsgrid.serialization.json.LIFJsonSerialization;
+
+import java.util.List;
+import java.util.Map;
 
 public class Coreference extends AbstractStanfordCoreNLPWebService implements
 		ICoreference {
@@ -14,85 +27,45 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
 
     @Override
     public String execute(LIFJsonSerialization json) throws StanfordWebServiceException {
-        return null;
+
+        String txt = json.getText();
+        JsonObj view = json.newView();
+        json.newContains(view, Discriminators.Uri.COREF,
+                "coref:stanford", this.getClass().getName() + ":" + Version.getVersion());
+        // NLP processing
+        Annotation annotation = new Annotation(txt);
+        snlp.annotate(annotation);
+        Map<Integer, CorefChain> graph = annotation.get(CorefCoreAnnotations.CorefChainAnnotation.class);
+
+        for(Integer id : graph.keySet()) {
+            CorefChain c =   graph.get(id);
+            System.out.println("ClusterId: " + id);
+            JsonObj anncoref = json.newAnnotation(view, Discriminators.Uri.COREF);
+            json.setId(anncoref, "coref" + id);
+            json.setLabel(anncoref, Discriminators.Uri.COREF);
+
+
+            CorefChain.CorefMention repre = c.getRepresentativeMention();
+            JsonObj annmentionrepr = json.newAnnotation(view, "Mention");
+            json.setId(annmentionrepr, "mention" + repre.mentionID);
+            json.setStart(annmentionrepr, repre.startIndex);
+            json.setEnd(annmentionrepr, repre.endIndex);
+            json.setLabel(annmentionrepr, "Mention");
+
+            List<CorefChain.CorefMention> cms = c.getMentionsInTextualOrder();
+            JsonArr mentions = new JsonArr();
+            for (CorefChain.CorefMention mention : cms) {
+                JsonObj annmention = json.newAnnotation(view, "Mention");
+                json.setId(annmention, "mention" + mention.mentionID);
+                json.setStart(annmention, mention.startIndex);
+                json.setEnd(annmention, mention.endIndex);
+                json.setLabel(annmention, "Mention");
+                mentions.put(mention.mentionID);
+            }
+            System.out.println("");
+            json.setFeature(anncoref, "representative",repre.mentionID);
+            json.setFeature(anncoref, "representative", mentions);
+        }
+        return json.toString();
     }
-
-//
-//
-//	@Override
-//	public Data execute(Data input) {
-//
-//		Data ret = null;
-//		long inputType = input.getDiscriminator();
-//		if (inputType == Types.ERROR)
-//		{
-//			return input;
-//		}
-//	    StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
-//	    // Requires Text?
-//
-//	    Annotation document = new Annotation(input.getPayload());
-//	    pipeline.annotate(document);
-//	    Map<Integer, CorefChain> graph = document.get(CorefChainAnnotation.class);
-//	    ProcessingStep step = new ProcessingStep();
-//        putFeature(step.getMetadata(), Metadata.PRODUCED_BY, "Stanford NER");
-////	    pipeline.prettyPrint(d, os);
-//
-//
-//
-////	    pipeline.
-////	    return data;
-//	    return null;
-//	}
-
-	// public static void main(String[]args) {
-	// // creates a StanfordCoreNLP object, with POS tagging, lemmatization,
-	// NER, parsing, and coreference resolution
-	// Properties props = new Properties();
-	// props.put("annotators",
-	// "tokenize, ssplit, pos, lemma, ner, parse, dcoref");
-	// StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
-	//
-	// // read some text in the text variable
-	// String text = ""; // Add your text here!
-	//
-	// // create an empty Annotation just with the given text
-	// Annotation document = new Annotation(text);
-	//
-	// // run all Annotators on this text
-	// pipeline.annotate(document);
-	//
-	// // these are all the sentences in this document
-	// // a CoreMap is essentially a Map that uses class objects as keys and has
-	// values with custom types
-	// List<CoreMap> sentences = document.get(SentencesAnnotation.class);
-	//
-	// for(CoreMap sentence: sentences) {
-	// // traversing the words in the current sentence
-	// // a CoreLabel is a CoreMap with additional token-specific methods
-	// for (CoreLabel token: sentence.get(TokensAnnotation.class)) {
-	// // this is the text of the token
-	// String word = token.get(TextAnnotation.class);
-	// // this is the POS tag of the token
-	// String pos = token.get(PartOfSpeechAnnotation.class);
-	// // this is the NER label of the token
-	// String ne = token.get(NamedEntityTagAnnotation.class);
-	// }
-	//
-	// // this is the parse tree of the current sentence
-	// Tree tree = sentence.get(TreeAnnotation.class);
-	//
-	// // this is the Stanford dependency graph of the current sentence
-	// SemanticGraph dependencies =
-	// sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
-	// }
-	//
-	// // This is the coreference link graph
-	// // Each chain stores a set of mentions that link to each other,
-	// // along with a method for getting the most representative mention
-	// // Both sentence and token offsets start at 1!
-	// Map<Integer, CorefChain> graph =
-	// document.get(CorefChainAnnotation.class);
-	// }
-
 }

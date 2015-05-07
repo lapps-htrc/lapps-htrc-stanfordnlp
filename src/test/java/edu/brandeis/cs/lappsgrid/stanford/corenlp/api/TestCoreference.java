@@ -2,9 +2,12 @@ package edu.brandeis.cs.lappsgrid.stanford.corenlp.api;
 
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 import edu.brandeis.cs.lappsgrid.stanford.corenlp.Coreference;
-import edu.brandeis.cs.lappsgrid.stanford.corenlp.Tokenizer;
-import org.junit.Assert;
 import org.junit.Test;
+import org.lappsgrid.serialization.Data;
+import org.lappsgrid.serialization.Serializer;
+import org.lappsgrid.serialization.lif.Container;
+
+import java.util.Map;
 
 
 /**
@@ -17,13 +20,6 @@ import org.junit.Test;
  * 
  */
 public class TestCoreference extends TestService {
-
-	Coreference tokenizer;
-
-	public TestCoreference() throws StanfordWebServiceException {
-//		tokenizer = new Coreference();
-	}
-	
 	@Test
 	public void testCoref() {
 
@@ -31,8 +27,14 @@ public class TestCoreference extends TestService {
 
     @Test
     public void testExecute(){
-//        ret = tokenizer.execute(data);
-//        Assert.assertTrue(ret.getPayload().contains("by return email or by telephone"));
-//        System.out.println(ret.getPayload());
+		Coreference coref = new Coreference();
+		String json = coref.execute("Sue see herself.");
+		System.out.println(json);
+		Container container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
+
+
+		json = coref.execute("Mike, Smith is a good person and he is from Boston.");
+		System.out.println(json);
+		container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
     }
 }
