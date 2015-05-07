@@ -51,6 +51,7 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
             json.setStart(annmentionrepr, repre.startIndex);
             json.setEnd(annmentionrepr, repre.endIndex);
             json.setLabel(annmentionrepr, "Mention");
+            json.setWord(annmentionrepr, txt.substring(repre.startIndex, repre.endIndex));
 
             List<CorefChain.CorefMention> cms = c.getMentionsInTextualOrder();
             JsonArr mentions = new JsonArr();
