@@ -60,11 +60,12 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
                 json.setStart(annmention, mention.startIndex);
                 json.setEnd(annmention, mention.endIndex);
                 json.setLabel(annmention, "Mention");
-                mentions.put(mention.mentionID);
+                json.setWord(annmention, txt.substring(mention.startIndex, mention.endIndex));
+                mentions.put("mention" + mention.mentionID);
             }
             System.out.println("");
             json.setFeature(anncoref, "representative",repre.mentionID);
-            json.setFeature(anncoref, "representative", mentions);
+            json.setFeature(anncoref, "mentions", mentions);
         }
         return json.toString();
     }
