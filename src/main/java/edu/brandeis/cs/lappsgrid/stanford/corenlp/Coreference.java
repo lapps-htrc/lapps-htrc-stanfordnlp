@@ -8,12 +8,15 @@ import edu.stanford.nlp.dcoref.CorefCoreAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.XMLOutputter;
 import edu.stanford.nlp.util.CoreMap;
 import org.lappsgrid.discriminator.Discriminators;
 import org.lappsgrid.serialization.json.JsonArr;
 import org.lappsgrid.serialization.json.JsonObj;
 import org.lappsgrid.serialization.json.LIFJsonSerialization;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -33,26 +36,23 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
         json.newContains(view, Discriminators.Uri.COREF,
                 "coref:stanford", this.getClass().getName() + ":" + Version.getVersion());
         // NLP processing
-        Annotation annotation = new Annotation(txt);
-        snlp.annotate(annotation);
-        Map<Integer, CorefChain> graph = annotation.get(CorefCoreAnnotations.CorefChainAnnotation.class);
+        Annotation doc = new Annotation(txt);
+        snlp.annotate(doc);
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        try {
+            XMLOutputter.xmlPrint(doc, output, snlp);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new StanfordWebServiceException("XML Print ERROR.",e);
+        }
+        String xmlAnn = new String(output.toByteArray());
+        System.out.println(xmlAnn);
+//        List<CoreMap> sents = doc.get(CoreAnnotations.SentencesAnnotation.class);
+//        List<CoreLabel> words = doc.get(CoreAnnotations.TokensAnnotation.class);
 
-        for(Integer id : graph.keySet()) {
-            CorefChain c =   graph.get(id);
-            System.out.println("ClusterId: " + id);
-            JsonObj anncoref = json.newAnnotation(view, Discriminators.Uri.COREF);
-            json.setId(anncoref, "coref" + id);
-            json.setLabel(anncoref, Discriminators.Uri.COREF);
-
-
-            CorefChain.CorefMention repre = c.getRepresentativeMention();
-            JsonObj annmentionrepr = json.newAnnotation(view, "Mention");
-            json.setId(annmentionrepr, "mention" + repre.mentionID);
-            json.setStart(annmentionrepr, repre.startIndex);
-            json.setEnd(annmentionrepr, repre.endIndex);
-            json.setLabel(annmentionrepr, "Mention");
-            json.setWord(annmentionrepr, txt.substring(repre.startIndex, repre.endIndex));
-
+        Map<Integer, CorefChain> corefMap = doc.get(CorefCoreAnnotations.CorefChainAnnotation.class);
+        for(Integer id : corefMap.keySet()) {
+            CorefChain c =   corefMap.get(id);
             List<CorefChain.CorefMention> cms = c.getMentionsInTextualOrder();
             JsonArr mentions = new JsonArr();
             for (CorefChain.CorefMention mention : cms) {
@@ -61,11 +61,14 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
                 json.setStart(annmention, mention.startIndex);
                 json.setEnd(annmention, mention.endIndex);
                 json.setLabel(annmention, "Mention");
-                json.setWord(annmention, txt.substring(mention.startIndex, mention.endIndex));
+                json.setWord(annmention, "" + txt.subSequence(mention.startIndex, mention.endIndex));
                 mentions.put("mention" + mention.mentionID);
             }
-            System.out.println("");
-            json.setFeature(anncoref, "representative",repre.mentionID);
+            JsonObj anncoref = json.newAnnotation(view, Discriminators.Uri.COREF);
+            json.setId(anncoref, "coref" + id);
+            json.setLabel(anncoref, Discriminators.Uri.COREF);
+            CorefChain.CorefMention repre = c.getRepresentativeMention();
+            json.setFeature(anncoref, "representative","mention" +repre.mentionID);
             json.setFeature(anncoref, "mentions", mentions);
         }
         return json.toString();

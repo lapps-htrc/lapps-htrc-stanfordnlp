@@ -33,7 +33,7 @@ public class TestCoreference extends TestService {
 		Container container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
 
 
-		json = coref.execute("Mike, Smith is a good person and he is from Boston.");
+		json = coref.execute("Mike, Smith is a good person and he is from Boston. John and Mary went to the store. They bought some milk.");
 		System.out.println(json);
 		container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
     }
