@@ -6,14 +6,17 @@ import edu.brandeis.cs.lappsgrid.stanford.corenlp.AbstractStanfordCoreNLPWebServ
 import edu.brandeis.cs.lappsgrid.stanford.corenlp.api.IParser;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
+import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations;
 import edu.stanford.nlp.semgraph.SemanticGraphEdge;
+import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
 import edu.stanford.nlp.util.CoreMap;
+import org.lappsgrid.discriminator.Discriminators;
 import org.lappsgrid.serialization.json.JsonArr;
 import org.lappsgrid.serialization.json.JsonObj;
 import org.lappsgrid.serialization.json.LIFJsonSerialization;
@@ -33,7 +36,8 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService implemen
     public String execute(LIFJsonSerialization json) throws StanfordWebServiceException {
         String txt = json.getText();
         JsonObj view  = json.newView();
-        json.newContains(view, "DependencyParser", "parser:stanford", this.getClass().getName() + ":" + Version.getVersion());
+        json.newContains(view, "http://vocab.lappsgrid.org/DependencyStructure", "dependencyparser:stanford", this.getClass().getName() + ":" + Version.getVersion());
+        json.newContains(view, "http://vocab.lappsgrid.org/Token", "dependencyparser:stanford", this.getClass().getName() + ":" + Version.getVersion());
         // NLP processing
         Annotation doc = new Annotation(txt);
         snlp.annotate(doc);
@@ -72,13 +76,25 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService implemen
                 JsonObj dep = new JsonObj();
                 dependencies.put(dep);
                 dep.put("id", "dep"+cntEdge++);
-                dep.put("type", "http://vocab.lappsgrid.org/Constituent");
-                dep.put("label", edge.getRelation().toPrettyString());
+                dep.put("label", edge.getRelation().toString());
                 JsonObj feats = new JsonObj();
                 dep.put("features", feats);
-                feats.put("governor", edge.getGovernor().index());
-                feats.put("dependent",edge.getDependent().index());
+                feats.put("governor", "tk" + cntSent + "_" + edge.getGovernor().index());
+                feats.put("governor_word", edge.getGovernor().word());
+                feats.put("dependent","tk" + cntSent + "_" + edge.getDependent().index());
+                feats.put("dependent_word", edge.getDependent().word());
             }
+
+            int cntToken = 1;
+            for (CoreLabel token : sent.get(CoreAnnotations.TokensAnnotation.class)) {
+                ann = json.newAnnotation(view);
+                json.setType(ann, Discriminators.Uri.TOKEN);
+                json.setId(ann, "tk" + cntSent + "_" + cntToken++);
+                json.setStart(ann, token.beginPosition());
+                json.setEnd(ann, token.endPosition());
+                json.setWord(ann, token.value());
+            }
+
         }
         return json.toString();
     }
@@ -89,16 +105,22 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService implemen
 		Annotation annotation = new Annotation(docs);
 		snlp.annotate(annotation);
 
-		StringWriter sw = new StringWriter();
-		PrintWriter writer = new PrintWriter(sw);  
+        StringBuilder sb = new StringBuilder();
 		List<CoreMap> sentences = annotation.get(SentencesAnnotation.class);
-		for (CoreMap sentence1 : sentences) {
-			for (Tree tree : sentence1.get(TreeAnnotation.class)) {				
-				tree.printLocalTree(writer);
-			}
+		for (CoreMap sentence : sentences) {
+            SemanticGraph graph = sentence.get(SemanticGraphCoreAnnotations.BasicDependenciesAnnotation.class);
+            for(SemanticGraphEdge edge : graph.getEdgeSet())
+            {
+                IndexedWord dep = edge.getDependent();
+                IndexedWord gov = edge.getGovernor();
+                GrammaticalRelation relation = edge.getRelation();
+                String disc = relation.toString() + "("+gov.word()+"-"+gov.index()+","+dep.word()+"-"+dep.index()+")";
+//                System.out.println(disc);
+                sb.append(disc+"\n");
+            }
 		}
 		// return null;
-		return sw.toString();
+		return sb.toString();
 	}
 
 }

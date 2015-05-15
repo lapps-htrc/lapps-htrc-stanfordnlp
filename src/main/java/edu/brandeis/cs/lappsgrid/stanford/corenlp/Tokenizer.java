@@ -47,64 +47,6 @@ public class Tokenizer extends AbstractStanfordCoreNLPWebService implements
         return json.toString();
     }
 
-//	@Override
-//	public Data execute(Data data) {
-//        long discriminator = data.getDiscriminator();
-//        if (discriminator == Types.ERROR)
-//        {
-//            return data;
-//        } else if (discriminator == Types.JSON) {
-//            String jsonstr = data.getPayload();
-//            JsonTokenizerSerialization json = new JsonTokenizerSerialization(jsonstr);
-//            json.setProducer(this.getClass().getName() + ":" + VERSION);
-//            json.setType("tokenizer:stanford");
-//
-//
-//            // NLP processing
-//            Annotation annotation = new Annotation(json.getTextValue());
-//            snlp.annotate(annotation);
-//            List<CoreMap> list = annotation.get(SentencesAnnotation.class);
-//            for (CoreMap sent : list) {
-//                for (CoreLabel token : sent.get(TokensAnnotation.class)) {
-//                    JSONObject ann = json.newAnnotation();
-//                    json.setStart(ann, token.beginPosition());
-//                    json.setEnd(ann, token.endPosition());
-//                    json.setWord(ann, token.value());
-//                    json.setLemma(ann, token.lemma());
-//                }
-//            }
-//            return DataFactory.json(json.toString());
-//
-//        } else if (discriminator == Types.TEXT) {
-//            String text = data.getPayload();
-//            JsonTokenizerSerialization json = new JsonTokenizerSerialization();
-//            json.setProducer(this.getClass().getName() + ":" + VERSION);
-//            json.setType("tokenizer:stanford");
-//            json.setTextValue(text);
-//            // NLP processing
-//            Annotation annotation = new Annotation(text);
-//            snlp.annotate(annotation);
-//            List<CoreMap> list = annotation.get(SentencesAnnotation.class);
-//            for (CoreMap sent : list) {
-//                for (CoreLabel token : sent.get(TokensAnnotation.class)) {
-//                    JSONObject ann = json.newAnnotation();
-//                    json.setStart(ann, token.beginPosition());
-//                    json.setEnd(ann, token.endPosition());
-//                    json.setWord(ann, token.value());
-//                    json.setLemma(ann, token.lemma());
-//                }
-//            }
-//            return DataFactory.json(json.toString());
-//        } else {
-//            String name = DiscriminatorRegistry.get(discriminator);
-//            String message = "Invalid input type. Expected JSON but found " + name;
-//            logger.warn(message);
-//            return DataFactory.error(message);
-//        }
-//	}
-
-
-
 
 
 	@Override

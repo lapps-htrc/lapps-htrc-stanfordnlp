@@ -253,6 +253,10 @@ public class LIFJsonSerialization {
         annotation.put("label", label);
     }
 
+    public void setType(JsonObj annotation, String label) {
+        annotation.put("type", label);
+    }
+
     public void setId(JsonObj annotation, String id) {
         annotation.put("id", id);
     }

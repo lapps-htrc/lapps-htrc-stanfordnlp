@@ -32,8 +32,9 @@ public class TestDependencyParser extends TestService {
 
     @Test
     public void testExecute(){
-        String ret = parser.execute("Programcreek is a very huge and useful website.");
+        String ret = parser.execute("Hi, Programcreek is a very huge and useful website.");
 		System.out.println(ret);
+		System.out.println();
 //        Assert.assertTrue(ret.getPayload().contains("NN"));
 //        Assert.assertTrue(ret.getPayload().contains("by return email or by telephone"));
     }
