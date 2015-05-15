@@ -60,9 +60,9 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService implemen
             int start = sent.get(CoreAnnotations.CharacterOffsetBeginAnnotation.class);
             int end = sent.get(CoreAnnotations.CharacterOffsetEndAnnotation.class);
             json.setId(ann, "dp" + cntSent++);
+            ann.put("type", "http://vocab.lappsgrid.org/DependencyStructure");
             json.setStart(ann, start);
             json.setEnd(ann, end);
-            ann.put("type", "http://vocab.lappsgrid.org/DependencyStructure");
 
 
             JsonArr dependencies = new JsonArr();
@@ -88,13 +88,12 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService implemen
             int cntToken = 1;
             for (CoreLabel token : sent.get(CoreAnnotations.TokensAnnotation.class)) {
                 ann = json.newAnnotation(view);
-                json.setType(ann, Discriminators.Uri.TOKEN);
                 json.setId(ann, "tk" + cntSent + "_" + cntToken++);
+                json.setType(ann, Discriminators.Uri.TOKEN);
                 json.setStart(ann, token.beginPosition());
                 json.setEnd(ann, token.endPosition());
                 json.setWord(ann, token.value());
             }
-
         }
         return json.toString();
     }
