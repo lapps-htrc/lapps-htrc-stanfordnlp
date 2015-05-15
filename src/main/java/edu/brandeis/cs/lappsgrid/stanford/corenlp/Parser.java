@@ -5,11 +5,19 @@ import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 import edu.brandeis.cs.lappsgrid.stanford.corenlp.api.IParser;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
+import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.XMLOutputter;
+import edu.stanford.nlp.semgraph.SemanticGraph;
+import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations;
+import edu.stanford.nlp.semgraph.SemanticGraphEdge;
+import edu.stanford.nlp.trees.Constituent;
+import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
 import edu.stanford.nlp.util.CoreMap;
+import org.lappsgrid.discriminator.Discriminators;
+import org.lappsgrid.serialization.json.JsonArr;
 import org.lappsgrid.serialization.json.JsonObj;
 import org.lappsgrid.serialization.json.LIFJsonSerialization;
 
@@ -17,7 +25,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.List;
+import java.util.*;
 
 public class Parser extends AbstractStanfordCoreNLPWebService implements
 		IParser {
@@ -35,6 +43,9 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
         Annotation doc = new Annotation(txt);
         snlp.annotate(doc);
 
+        Map<String, String> map = new HashMap<String, String>();
+        int cnt = 0;
+
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         try {
             XMLOutputter.xmlPrint(doc, output, snlp);
@@ -45,8 +56,6 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
         String xmlAnn = new String(output.toByteArray());
         System.out.println(xmlAnn);
 
-
-
         List<CoreMap> list = doc.get(SentencesAnnotation.class);
         for (CoreMap sent : list) {
             JsonObj ann = json.newAnnotation(view);
@@ -54,17 +63,117 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
             int end = sent.get(CoreAnnotations.CharacterOffsetEndAnnotation.class);
             json.setStart(ann, start);
             json.setEnd(ann, end);
+            ann.put("type", "http://vocab.lappsgrid.org/PhraseStructure");
+            Tree root = sent.get(TreeAnnotation.class);
+            Queue<Tree> queue = new LinkedList<Tree>();
+
+            JsonArr constituents = new JsonArr();
             json.setSentence(ann, sent.toString());
-            for (Tree tree : sent.get(TreeAnnotation.class)) {
-                StringWriter sw = new StringWriter();
-                PrintWriter writer = new PrintWriter(sw);
-                tree.printLocalTree(writer);
-                json.setFeature(ann, "label", tree.label().value());
-                json.setFeature(ann, "pattern", sw.toString());
+            json.setFeature(ann, "penntree", root.pennString());
+            json.setFeature(ann, "constituents", constituents);
+
+//            Set<Constituent> constituentsets = root.constituents();
+//            for(Constituent cons: constituentsets) {
+//                System.out.println("start:" + cons.start());
+//                System.out.println("end:" + cons.end());
+//                System.out.println("value:" + cons.value());
+//            }
+            queue.add(root);
+            while(!queue.isEmpty()) {
+                Tree parent = queue.remove();
+                JsonObj constituent = new JsonObj();
+                System.out.println("label:" + parent.label().value());
+                System.out.println("value:" + parent.value());
+                System.out.println("pennString:" + parent.pennString());
+                constituents.put(constituent);
+                String key = parent.pennString();
+                String id = map.get(key);
+                if(id == null) {
+                    id = "cs" + cnt++;
+                    map.put(key, id);
+                }
+//                for(Constituent cons: constituentsets) {
+//                    System.out.print("start:" + cons.start());
+//                    System.out.print(" end:" + cons.end());
+//                    System.out.println(" value:" + cons.label());
+//                }
+                System.out.println("-----------------------");
+
+                constituent.put("id", id);
+                constituent.put("type", "http://vocab.lappsgrid.org/Constituent");
+                constituent.put("label", parent.label().value());
+                JsonObj feature = new JsonObj();
+                constituent.put("features", feature);
+                feature.put("penntree", parent.pennString());
+                List<Tree> childlist = parent.getChildrenAsList();
+                if (childlist.size() > 0) {
+                    JsonArr children = new JsonArr();
+                    constituent.put("children", children);
+                    for (Tree child : childlist) {
+                        String childkey = child.pennString();
+                        String childid = map.get(childkey);
+                        if(childid == null) {
+                            childid = "cs" + cnt++;
+                            map.put(childkey, childid);
+                        }
+                        children.put(childid);
+                        queue.add(child);
+                    }
+                }
             }
+//
+
+//            for (Tree tree : sent.get(TreeAnnotation.class)) {
+//                StringWriter sw = new StringWriter();
+//                PrintWriter writer = new PrintWriter(sw);
+//                tree.printLocalTree(writer);
+//                json.setFeature(ann, "label", tree.label().value());
+//                json.setFeature(ann, "pattern", sw.toString());
+//            }
+
+//
+//            SemanticGraph graph = sent.get(SemanticGraphCoreAnnotations.BasicDependenciesAnnotation.class);
+////            IndexedWord root = graph.getFirstRoot();
+//            Stack<IndexedWord> stack = new Stack<IndexedWord>();
+//            for(IndexedWord root:graph.getRoots())
+//                stack.push(root);
+//            while(!stack.empty()) {
+//                IndexedWord parent = stack.pop();
+//                JsonObj constituent = new JsonObj();
+//                constituents.put(constituent);
+//                constituent.put("id", "cs" + parent.index());
+//                constituent.put("type", "http://vocab.lappsgrid.org/Constituent");
+//                JsonObj feature = new JsonObj();
+//                if(graph.getParent(parent) == null) {
+//                    constituent.put("label", "root");
+//                }else {
+//                    constituent.put("label", graph.getEdge(graph.getParent(parent), parent).getRelation().toString());
+//                }
+//                constituent.put("features",feature);
+//                feature.put("word", parent.word());
+//                List<IndexedWord> childlist = graph.getChildList(parent);
+//                if(childlist.size() > 0) {
+//                    JsonArr children = new JsonArr();
+//                    constituent.put("children", children);
+//                    for(IndexedWord child:childlist) {
+//                        children.put("cs"+child.index());
+//                        stack.push(child);
+//                    }
+//                }
+//            }
+
+
+//            for (Tree tree : sent.get(TreeAnnotation.class)) {
+//                StringWriter sw = new StringWriter();
+//                PrintWriter writer = new PrintWriter(sw);
+//                tree.printLocalTree(writer);
+//                json.setFeature(ann, "label", tree.label().value());
+//                json.setFeature(ann, "pattern", sw.toString());
+//            }
         }
         return json.toString();
     }
+
 //
 //	@Override
 //	public Data execute(Data data) {

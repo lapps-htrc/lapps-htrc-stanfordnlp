@@ -57,7 +57,8 @@ public class TestParser extends TestService {
 
     @Test
     public void testExecute(){
-//        ret = parser.execute(data);
+        String ret = parser.execute("Programcreek is a very huge and useful website.");
+		System.out.println(ret);
 //        Assert.assertTrue(ret.getPayload().contains("NN"));
 //        Assert.assertTrue(ret.getPayload().contains("by return email or by telephone"));
     }
