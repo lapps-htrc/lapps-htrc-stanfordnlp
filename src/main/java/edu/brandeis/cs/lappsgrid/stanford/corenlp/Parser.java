@@ -45,17 +45,6 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
 
         Map<String, String> map = new HashMap<String, String>();
         int cntConst = 0;
-
-//        ByteArrayOutputStream output = new ByteArrayOutputStream();
-//        try {
-//            XMLOutputter.xmlPrint(doc, output, snlp);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            throw new StanfordWebServiceException("XML Print ERROR.",e);
-//        }
-//        String xmlAnn = new String(output.toByteArray());
-//        System.out.println(xmlAnn);
-
         List<CoreMap> list = doc.get(SentencesAnnotation.class);
         int cntSent = 0;
         for (CoreMap sent : list) {
@@ -63,10 +52,10 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
             int start = sent.get(CoreAnnotations.CharacterOffsetBeginAnnotation.class);
             int end = sent.get(CoreAnnotations.CharacterOffsetEndAnnotation.class);
 
+            json.setId(ann, "ps" + cntSent++);
+            json.setType(ann, "http://vocab.lappsgrid.org/PhraseStructure");
             json.setStart(ann, start);
             json.setEnd(ann, end);
-            json.setId(ann, "ps" + cntSent++);
-            ann.put("type", "http://vocab.lappsgrid.org/PhraseStructure");
             Tree root = sent.get(TreeAnnotation.class);
             Queue<Tree> queue = new LinkedList<Tree>();
 
@@ -74,20 +63,10 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
             json.setSentence(ann, sent.toString());
             json.setFeature(ann, "penntree", root.pennString());
             json.setFeature(ann, "constituents", constituents);
-
-//            Set<Constituent> constituentsets = root.constituents();
-//            for(Constituent cons: constituentsets) {
-//                System.out.println("start:" + cons.start());
-//                System.out.println("end:" + cons.end());
-//                System.out.println("value:" + cons.value());
-//            }
             queue.add(root);
             while(!queue.isEmpty()) {
                 Tree parent = queue.remove();
                 JsonObj constituent = new JsonObj();
-//                System.out.println("label:" + parent.label().value());
-//                System.out.println("value:" + parent.value());
-//                System.out.println("pennString:" + parent.pennString());
                 constituents.put(constituent);
                 String key = parent.pennString();
                 String id = map.get(key);
@@ -95,13 +74,6 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
                     id = "cs" + cntConst++;
                     map.put(key, id);
                 }
-//                for(Constituent cons: constituentsets) {
-//                    System.out.print("start:" + cons.start());
-//                    System.out.print(" end:" + cons.end());
-//                    System.out.println(" value:" + cons.label());
-//                }
-                System.out.println("-----------------------");
-
                 constituent.put("id", id);
                 constituent.put("type", "http://vocab.lappsgrid.org/Constituent");
                 constituent.put("label", parent.label().value());

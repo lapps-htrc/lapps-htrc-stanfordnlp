@@ -46,7 +46,7 @@ public class POSTagger extends AbstractStanfordCoreNLPWebService implements
                 json.setEnd(ann, token.endPosition());
                 json.setWord(ann, token.value());
                 json.setFeature(ann,"pos", token.get(PartOfSpeechAnnotation.class));
-                json.setLabel(ann, Discriminators.Uri.POS);
+                json.setType(ann, Discriminators.Uri.POS);
             }
             cntsent++;
         }

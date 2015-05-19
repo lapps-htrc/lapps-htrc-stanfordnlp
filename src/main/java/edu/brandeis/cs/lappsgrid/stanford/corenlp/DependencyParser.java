@@ -43,23 +43,13 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService implemen
         snlp.annotate(doc);
         Map<String, String> map = new HashMap<String, String>();
 
-//        ByteArrayOutputStream output = new ByteArrayOutputStream();
-//        try {
-//            XMLOutputter.xmlPrint(doc, output, snlp);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            throw new StanfordWebServiceException("XML Print ERROR.",e);
-//        }
-//        String xmlAnn = new String(output.toByteArray());
-//        System.out.println(xmlAnn);
-
         List<CoreMap> list = doc.get(SentencesAnnotation.class);
         int cntSent = 0;
         for (CoreMap sent : list) {
             JsonObj ann = json.newAnnotation(view);
             int start = sent.get(CoreAnnotations.CharacterOffsetBeginAnnotation.class);
             int end = sent.get(CoreAnnotations.CharacterOffsetEndAnnotation.class);
-            json.setId(ann, "dp" + cntSent++);
+            json.setId(ann, "dp" + cntSent);
             ann.put("type", "http://vocab.lappsgrid.org/DependencyStructure");
             json.setStart(ann, start);
             json.setEnd(ann, end);
@@ -95,6 +85,7 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService implemen
                 json.setWord(ann, token.value());
                 json.setFeature(ann, "pos", token.tag());
             }
+            cntSent ++;
         }
         return json.toString();
     }

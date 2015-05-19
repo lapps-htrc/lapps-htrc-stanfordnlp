@@ -50,10 +50,10 @@ public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService
                 String  ner = token.ner();
                 if(ner != null && !ner.equalsIgnoreCase("O")) {
                     JsonObj ann = json.newAnnotation(view, Discriminators.Uri.NE);
+					json.setType(ann, Discriminators.Uri.NE);
                     json.setStart(ann, token.beginPosition());
                     json.setEnd(ann, token.endPosition());
                     json.setWord(ann, token.value());
-					json.setLabel(ann, Discriminators.Uri.NE);
                     json.setCategory(ann, ner);
                 }
             }

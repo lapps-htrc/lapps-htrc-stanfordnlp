@@ -42,19 +42,15 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
         // NLP processing
         Annotation doc = new Annotation(txt);
         snlp.annotate(doc);
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-        try {
-            XMLOutputter.xmlPrint(doc, output, snlp);
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new StanfordWebServiceException("XML Print ERROR.",e);
-        }
-        String xmlAnn = new String(output.toByteArray());
-        System.out.println(xmlAnn);
-//        List<CoreMap> sents = doc.get(CoreAnnotations.SentencesAnnotation.class);
-//        List<CoreLabel> words = doc.get(CoreAnnotations.TokensAnnotation.class);
-
-
+//        ByteArrayOutputStream output = new ByteArrayOutputStream();
+//        try {
+//            XMLOutputter.xmlPrint(doc, output, snlp);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            throw new StanfordWebServiceException("XML Print ERROR.",e);
+//        }
+//        String xmlAnn = new String(output.toByteArray());
+//        System.out.println(xmlAnn);
 
         List<CoreMap> listSent = doc.get(CoreAnnotations.SentencesAnnotation.class);
         int cntSent = 0;
@@ -69,6 +65,7 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
                 json.setWord(ann, token.value());
                 json.setFeature(ann, "pos", token.tag());
             }
+            cntSent ++;
         }
 
         Map<Integer, CorefChain> corefMap = doc.get(CorefCoreAnnotations.CorefChainAnnotation.class);
