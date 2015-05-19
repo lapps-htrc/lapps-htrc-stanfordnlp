@@ -37,7 +37,7 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService implemen
         String txt = json.getText();
         JsonObj view  = json.newView();
         json.newContains(view, "http://vocab.lappsgrid.org/DependencyStructure", "dependencyparser:stanford", this.getClass().getName() + ":" + Version.getVersion());
-        json.newContains(view, "http://vocab.lappsgrid.org/Token", "dependencyparser:stanford", this.getClass().getName() + ":" + Version.getVersion());
+        json.newContains(view, "http://vocab.lappsgrid.org/Token", "token:stanford", this.getClass().getName() + ":" + Version.getVersion());
         // NLP processing
         Annotation doc = new Annotation(txt);
         snlp.annotate(doc);

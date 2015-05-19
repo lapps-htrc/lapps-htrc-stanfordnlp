@@ -35,9 +35,9 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
         JsonObj view = json.newView();
         json.newContains(view, Discriminators.Uri.COREF,
                 "coref:stanford", this.getClass().getName() + ":" + Version.getVersion());
-        json.newContains(view, Discriminators.Uri.TOKEN, "coref:stanford",
+        json.newContains(view, Discriminators.Uri.TOKEN, "token:stanford",
                 this.getClass().getName() + ":" + Version.getVersion());
-        json.newContains(view, "http://vocab.lappsgrid.org/Markable", "coref:stanford",
+        json.newContains(view, "http://vocab.lappsgrid.org/Markable", "markable:stanford",
                 this.getClass().getName() + ":" + Version.getVersion());
         // NLP processing
         Annotation doc = new Annotation(txt);

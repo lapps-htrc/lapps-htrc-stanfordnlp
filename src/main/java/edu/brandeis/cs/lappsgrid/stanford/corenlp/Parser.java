@@ -38,7 +38,7 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
     public String execute(LIFJsonSerialization json) throws StanfordWebServiceException {
         String txt = json.getText();
         JsonObj view  = json.newView();
-        json.newContains(view, "Parser", "parser:stanford", this.getClass().getName() + ":" + Version.getVersion());
+        json.newContains(view, "Parser", "parse:stanford", this.getClass().getName() + ":" + Version.getVersion());
         // NLP processing
         Annotation doc = new Annotation(txt);
         snlp.annotate(doc);
