@@ -93,6 +93,7 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService implemen
                 json.setStart(ann, token.beginPosition());
                 json.setEnd(ann, token.endPosition());
                 json.setWord(ann, token.value());
+                json.setFeature(ann, "pos", token.tag());
             }
         }
         return json.toString();
