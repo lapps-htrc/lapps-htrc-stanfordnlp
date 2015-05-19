@@ -1,9 +1,6 @@
-package edu.brandeis.cs.lappsgrid.stanford.corenlp.api;
+package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
-import edu.brandeis.cs.lappsgrid.stanford.corenlp.DependencyParser;
-import edu.brandeis.cs.lappsgrid.stanford.corenlp.Parser;
-import org.junit.Assert;
 import org.junit.Test;
 
 /**

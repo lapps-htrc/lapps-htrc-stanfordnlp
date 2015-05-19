@@ -1,4 +1,4 @@
-package edu.brandeis.cs.lappsgrid.stanford.corenlp.api;
+package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
 
 import org.apache.commons.io.FileUtils;

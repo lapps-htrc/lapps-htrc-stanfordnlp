@@ -1,4 +1,4 @@
-package edu.brandeis.cs.lappsgrid.stanford.corenlp.api;
+package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 import edu.brandeis.cs.lappsgrid.stanford.corenlp.Coreference;
@@ -20,7 +20,7 @@ import java.util.Map;
  * 
  */
 public class TestCoreference extends TestService {
-	@Test
+//	@Test
 	public void testCoref() {
 
 	}

@@ -1,7 +1,6 @@
-package edu.brandeis.cs.lappsgrid.stanford.corenlp.api;
+package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
-import edu.brandeis.cs.lappsgrid.stanford.corenlp.Tokenizer;
 import org.junit.Assert;
 import org.junit.Test;
 import org.lappsgrid.serialization.Data;

@@ -35,6 +35,10 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
         JsonObj view = json.newView();
         json.newContains(view, Discriminators.Uri.COREF,
                 "coref:stanford", this.getClass().getName() + ":" + Version.getVersion());
+        json.newContains(view, Discriminators.Uri.TOKEN, "coref:stanford",
+                this.getClass().getName() + ":" + Version.getVersion());
+        json.newContains(view, "http://vocab.lappsgrid.org/Markable", "coref:stanford",
+                this.getClass().getName() + ":" + Version.getVersion());
         // NLP processing
         Annotation doc = new Annotation(txt);
         snlp.annotate(doc);
@@ -50,25 +54,46 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
 //        List<CoreMap> sents = doc.get(CoreAnnotations.SentencesAnnotation.class);
 //        List<CoreLabel> words = doc.get(CoreAnnotations.TokensAnnotation.class);
 
+
+
+        List<CoreMap> list = doc.get(CoreAnnotations.SentencesAnnotation.class);
+        int cntSent = 0;
+        for (CoreMap sent : list) {
+            int cntToken = 1;
+            for (CoreLabel token : sent.get(CoreAnnotations.TokensAnnotation.class)) {
+                JsonObj ann = json.newAnnotation(view);
+                json.setId(ann, "tk_" + cntSent + "_" + cntToken++);
+                json.setType(ann, Discriminators.Uri.TOKEN);
+                json.setStart(ann, token.beginPosition());
+                json.setEnd(ann, token.endPosition());
+                json.setWord(ann, token.value());
+                json.setFeature(ann, "pos", token.tag());
+            }
+        }
+
         Map<Integer, CorefChain> corefMap = doc.get(CorefCoreAnnotations.CorefChainAnnotation.class);
         for(Integer id : corefMap.keySet()) {
-            CorefChain c =   corefMap.get(id);
-            List<CorefChain.CorefMention> cms = c.getMentionsInTextualOrder();
+            CorefChain coref =   corefMap.get(id);
+            List<CorefChain.CorefMention> cms = coref.getMentionsInTextualOrder();
             JsonArr mentions = new JsonArr();
+
             for (CorefChain.CorefMention mention : cms) {
-                JsonObj annmention = json.newAnnotation(view, "Mention");
-                json.setId(annmention, "mention" + mention.mentionID);
-                json.setStart(annmention, mention.startIndex);
-                json.setEnd(annmention, mention.endIndex);
-                json.setLabel(annmention, "Mention");
-                json.setWord(annmention, "" + txt.subSequence(mention.startIndex, mention.endIndex));
-                mentions.put("mention" + mention.mentionID);
+                JsonObj ann = json.newAnnotation(view);
+                json.setId(ann, "m" + mention.mentionID);
+                json.setType(ann, "http://vocab.lappsgrid.org/Markable");
+                json.setStart(ann, mention.startIndex);
+                json.setEnd(ann, mention.endIndex);
+                JsonArr targets = new JsonArr();
+                ann.put("targets", targets);
+                for(int m = mention.startIndex; m < mention.endIndex; m ++)
+                    targets.put("tk_" + mention.sentNum + "_" + m);
+                mentions.put("m" + mention.mentionID);
             }
-            JsonObj anncoref = json.newAnnotation(view, Discriminators.Uri.COREF);
+            JsonObj anncoref = json.newAnnotation(view);
             json.setId(anncoref, "coref" + id);
-            json.setLabel(anncoref, Discriminators.Uri.COREF);
-            CorefChain.CorefMention repre = c.getRepresentativeMention();
-            json.setFeature(anncoref, "representative","mention" +repre.mentionID);
+            json.setType(anncoref, Discriminators.Uri.COREF);
+            CorefChain.CorefMention repre = coref.getRepresentativeMention();
+            json.setFeature(anncoref, "representative","m" +repre.mentionID);
             json.setFeature(anncoref, "mentions", mentions);
         }
         return json.toString();
