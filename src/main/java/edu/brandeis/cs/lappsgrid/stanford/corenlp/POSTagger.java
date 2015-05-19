@@ -36,15 +36,19 @@ public class POSTagger extends AbstractStanfordCoreNLPWebService implements
         Annotation annotation = new Annotation(txt);
         snlp.annotate(annotation);
         List<CoreMap> list = annotation.get(SentencesAnnotation.class);
+        int cntsent = 0;
         for (CoreMap sent : list) {
+            int cnttok = 0;
             for (CoreLabel token : sent.get(TokensAnnotation.class)) {
                 JsonObj ann = json.newAnnotation(view);
+                json.setId(ann, "tk_"+cntsent+"_"+cnttok++);
                 json.setStart(ann, token.beginPosition());
                 json.setEnd(ann, token.endPosition());
                 json.setWord(ann, token.value());
                 json.setFeature(ann,"pos", token.get(PartOfSpeechAnnotation.class));
                 json.setLabel(ann, Discriminators.Uri.POS);
             }
+            cntsent++;
         }
         return json.toString();
     }

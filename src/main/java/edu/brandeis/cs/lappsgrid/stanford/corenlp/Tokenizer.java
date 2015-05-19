@@ -35,14 +35,18 @@ public class Tokenizer extends AbstractStanfordCoreNLPWebService implements
         Annotation annotation = new Annotation(txt);
         snlp.annotate(annotation);
         List<CoreMap> list = annotation.get(SentencesAnnotation.class);
+        int cntsent = 0;
         for (CoreMap sent : list) {
+            int cnttk = 0;
             for (CoreLabel token : sent.get(TokensAnnotation.class)) {
                 JsonObj ann = json.newAnnotation(view);
+                json.setId(ann, "tk_"+cntsent+"_"+cnttk++);
                 json.setLabel(ann, Discriminators.Uri.TOKEN);
                 json.setStart(ann, token.beginPosition());
                 json.setEnd(ann, token.endPosition());
                 json.setWord(ann, token.value());
             }
+            cntsent++;
         }
         return json.toString();
     }

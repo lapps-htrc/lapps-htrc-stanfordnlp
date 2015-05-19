@@ -33,10 +33,12 @@ public class Splitter extends AbstractStanfordCoreNLPWebService implements
         snlp.annotate(annotation);
 
         List<CoreMap> list = annotation.get(SentencesAnnotation.class);
+        int cntsent = 0;
         for (CoreMap sent : list) {
             JsonObj jsonann = json.newAnnotation(view);
             int start = sent.get(CoreAnnotations.CharacterOffsetBeginAnnotation.class);
             int end = sent.get(CoreAnnotations.CharacterOffsetEndAnnotation.class);
+            json.setId(jsonann, "st"+cntsent++);
             json.setStart(jsonann, start);
             json.setEnd(jsonann, end);
             json.setSentence(jsonann, sent.toString());
