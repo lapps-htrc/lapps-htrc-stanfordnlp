@@ -56,9 +56,9 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
 
 
 
-        List<CoreMap> list = doc.get(CoreAnnotations.SentencesAnnotation.class);
+        List<CoreMap> listSent = doc.get(CoreAnnotations.SentencesAnnotation.class);
         int cntSent = 0;
-        for (CoreMap sent : list) {
+        for (CoreMap sent : listSent) {
             int cntToken = 1;
             for (CoreLabel token : sent.get(CoreAnnotations.TokensAnnotation.class)) {
                 JsonObj ann = json.newAnnotation(view);
@@ -75,14 +75,18 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
         for(Integer id : corefMap.keySet()) {
             CorefChain coref =   corefMap.get(id);
             List<CorefChain.CorefMention> cms = coref.getMentionsInTextualOrder();
-            JsonArr mentions = new JsonArr();
 
+            JsonArr mentions = new JsonArr();
             for (CorefChain.CorefMention mention : cms) {
                 JsonObj ann = json.newAnnotation(view);
                 json.setId(ann, "m" + mention.mentionID);
                 json.setType(ann, "http://vocab.lappsgrid.org/Markable");
                 json.setStart(ann, mention.startIndex);
                 json.setEnd(ann, mention.endIndex);
+                CoreMap tokens = listSent.get(mention.sentNum - 1);
+                int begin = tokens.get(CoreAnnotations.TokensAnnotation.class).get(mention.startIndex - 1).beginPosition();
+                int end = tokens.get(CoreAnnotations.TokensAnnotation.class).get(mention.endIndex - 2).endPosition();
+                json.setFeature(ann,"words", txt.substring(begin, end));
                 JsonArr targets = new JsonArr();
                 ann.put("targets", targets);
                 for(int m = mention.startIndex; m < mention.endIndex; m ++)
