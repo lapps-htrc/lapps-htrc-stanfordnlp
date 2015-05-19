@@ -65,7 +65,7 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService implemen
             for(SemanticGraphEdge edge:graph.getEdgeSet()) {
                 JsonObj dep = new JsonObj();
                 dependencies.put(dep);
-                dep.put("id", "dep"+cntEdge++);
+                dep.put("id", "dep_"+cntSent+"_"+cntEdge++);
                 dep.put("label", edge.getRelation().toString());
                 JsonObj feats = new JsonObj();
                 dep.put("features", feats);
