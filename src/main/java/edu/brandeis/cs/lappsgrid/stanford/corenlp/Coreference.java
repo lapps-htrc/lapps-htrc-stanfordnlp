@@ -82,14 +82,17 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
                 JsonObj ann = json.newAnnotation(view);
                 json.setId(ann, "m" + mention.mentionID);
                 json.setType(ann, "http://vocab.lappsgrid.org/Markable");
-                json.setStart(ann, mention.startIndex);
-                json.setEnd(ann, mention.endIndex);
                 CoreMap tokens = listSent.get(mention.sentNum - 1);
                 int begin = tokens.get(CoreAnnotations.TokensAnnotation.class).get(mention.startIndex - 1).beginPosition();
                 int end = tokens.get(CoreAnnotations.TokensAnnotation.class).get(mention.endIndex - 2).endPosition();
-                json.setFeature(ann,"words", txt.substring(begin, end));
+                json.setStart(ann, begin);
+                json.setEnd(ann, end);
+                json.setFeature(ann, "words", txt.substring(begin, end));
+                json.setFeature(ann,"sentenceIndex", mention.sentNum - 1);
+                json.setFeature(ann,"targetStart", mention.startIndex);
+                json.setFeature(ann,"targetEnd", mention.endIndex);
                 JsonArr targets = new JsonArr();
-                ann.put("targets", targets);
+                json.setFeature(ann, "targets",targets);
                 for(int m = mention.startIndex; m < mention.endIndex; m ++)
                     targets.put("tk_" + mention.sentNum + "_" + m);
                 mentions.put("m" + mention.mentionID);
