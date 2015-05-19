@@ -75,7 +75,8 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
         for(Integer id : corefMap.keySet()) {
             CorefChain coref =   corefMap.get(id);
             List<CorefChain.CorefMention> cms = coref.getMentionsInTextualOrder();
-
+            if(cms.size() <= 1)
+                continue;
             JsonArr mentions = new JsonArr();
             for (CorefChain.CorefMention mention : cms) {
                 JsonObj ann = json.newAnnotation(view);
