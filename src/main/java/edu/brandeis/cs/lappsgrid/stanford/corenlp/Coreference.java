@@ -91,7 +91,7 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
                 JsonArr targets = new JsonArr();
                 json.setFeature(ann, "targets",targets);
                 for(int m = mention.startIndex; m < mention.endIndex; m ++)
-                    targets.put("tk_" + mention.sentNum + "_" + m);
+                    targets.put("tk_" + (mention.sentNum-1) + "_" + m);
                 mentions.put("m" + mention.mentionID);
             }
             JsonObj anncoref = json.newAnnotation(view);
