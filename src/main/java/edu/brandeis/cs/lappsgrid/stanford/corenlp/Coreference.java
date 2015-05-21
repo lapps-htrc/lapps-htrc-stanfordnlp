@@ -86,8 +86,8 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
                 json.setEnd(ann, end);
                 json.setFeature(ann, "words", txt.substring(begin, end));
                 json.setFeature(ann,"sentenceIndex", mention.sentNum - 1);
-                json.setFeature(ann,"targetStart", mention.startIndex);
-                json.setFeature(ann,"targetEnd", mention.endIndex);
+//                json.setFeature(ann,"targetStart", mention.startIndex);
+//                json.setFeature(ann,"targetEnd", mention.endIndex);
                 JsonArr targets = new JsonArr();
                 json.setFeature(ann, "targets",targets);
                 for(int m = mention.startIndex; m < mention.endIndex; m ++)
