@@ -39,10 +39,10 @@ public class Splitter extends AbstractStanfordCoreNLPWebService implements
             int start = sent.get(CoreAnnotations.CharacterOffsetBeginAnnotation.class);
             int end = sent.get(CoreAnnotations.CharacterOffsetEndAnnotation.class);
             json.setId(jsonann, "st"+cntsent++);
+            json.setType(jsonann, Discriminators.Uri.SENTENCE);
             json.setStart(jsonann, start);
             json.setEnd(jsonann, end);
             json.setSentence(jsonann, sent.toString());
-            json.setType(jsonann, Discriminators.Uri.SENTENCE);
         }
         return json.toString();
     }

@@ -50,7 +50,7 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService implemen
             int start = sent.get(CoreAnnotations.CharacterOffsetBeginAnnotation.class);
             int end = sent.get(CoreAnnotations.CharacterOffsetEndAnnotation.class);
             json.setId(ann, "dp" + cntSent);
-            ann.put("type", "http://vocab.lappsgrid.org/DependencyStructure");
+            json.setType(ann, "http://vocab.lappsgrid.org/DependencyStructure");
             json.setStart(ann, start);
             json.setEnd(ann, end);
 

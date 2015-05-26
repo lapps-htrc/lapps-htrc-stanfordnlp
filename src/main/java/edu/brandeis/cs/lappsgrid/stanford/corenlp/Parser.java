@@ -75,7 +75,7 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
                     map.put(key, id);
                 }
                 constituent.put("id", id);
-                constituent.put("type", "http://vocab.lappsgrid.org/Constituent");
+                constituent.put("@type", "http://vocab.lappsgrid.org/Constituent");
                 constituent.put("label", parent.label().value());
                 JsonObj feature = new JsonObj();
                 constituent.put("features", feature);
