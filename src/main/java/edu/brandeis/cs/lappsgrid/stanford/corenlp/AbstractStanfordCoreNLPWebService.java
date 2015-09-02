@@ -1,32 +1,33 @@
 package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
-import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
-import org.apache.commons.io.IOUtils;
+import org.apache.xerces.impl.io.UTF8Reader;
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.discriminator.Discriminators;
-import org.lappsgrid.serialization.json.JsonObj;
-import org.lappsgrid.serialization.json.LIFJsonSerialization;
+import org.lappsgrid.metadata.ServiceMetadata;
+import org.lappsgrid.serialization.Data;
+import org.lappsgrid.serialization.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <a href="http://nlp.stanford.edu/software/corenlp.shtml" target="_blank">
  * Stanford Core NLP </a> provides a collection of available NLP tools,
  * including "tokenize, ssplit, pos, lemma, ner, parse, dcoref".
- * 
+ *
  * <p>
- * 
+ *
  * They are available through unique interface called annotation.
- * 
+ *
  * @author shicq@cs.brandeis.edu
- * 
+ *
  */
 public abstract class AbstractStanfordCoreNLPWebService implements WebService {
 
@@ -48,9 +49,16 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
 	protected Properties props = new Properties();
 	StanfordCoreNLP snlp = null;
 
-	public AbstractStanfordCoreNLPWebService() {
-//		this.init("tokenize, ssplit, pos, lemma, ner, parse, dcoref");
-	}
+    private String metadata;
+
+    public AbstractStanfordCoreNLPWebService() {
+        try {
+            loadMetadata();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
 
     protected static void putFeature(Map mapFeature, String key, Object obj) {
@@ -93,6 +101,9 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
 
     @Override
     public String execute(String s) {
+        return null;
+    }
+        /*
         LIFJsonSerialization json = null;
         try{
             s = s.trim();
@@ -118,34 +129,38 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
 
 
     public abstract String execute(LIFJsonSerialization json) throws StanfordWebServiceException;
+    */
 
+    public void loadMetadata() throws IOException {
+        // get caller name using reflection
+        String serviceName = this.getClass().getName();
+        String resName = "/metadata/"+ serviceName +".json";
+        logger.info("load resources:" + resName);
+        InputStream inputStream = this.getClass().getResourceAsStream(resName);
 
+        if (inputStream == null) {
+            String message = "Unable to load metadata file for " + this.getClass().getName();
+            logger.error(message);
+            throw new IOException(message);
+        } else {
+            UTF8Reader reader = new UTF8Reader(inputStream);
+            try {
+                Scanner s = new Scanner(reader).useDelimiter("\\A");
+                String metadataText = s.hasNext() ? s.next() : "";
+                this.metadata = (new Data<>(Discriminators.Uri.META,
+                        Serializer.parse(metadataText, ServiceMetadata.class))).asPrettyJson();
+            } catch (Exception e) {
+                String message = "Unable to parse json for " + this.getClass().getName();
+                logger.error(message, e);
+                this.metadata = (new Data<>(Discriminators.Uri.ERROR, message)).asPrettyJson();
+            }
+            reader.close();
+        }
+    }
 
     @Override
     public String getMetadata() {
-        // get caller name using reflection
-        String name = this.getClass().getName();
-        //
-        String resName = "/metadata/"+ name +".json";
-//        System.out.println("load resources:" + resName);
-        logger.info("load resources:" + resName);
-        try {
-            String meta = IOUtils.toString(this.getClass().getResourceAsStream(resName));
-            JsonObj json = new JsonObj();
-            json.put("discriminator", Discriminators.Uri.META);
-            json.put("payload", new JsonObj(meta));
-            return json.toString();
-        }catch (Throwable th) {
-            JsonObj json = new JsonObj();
-            json.put("discriminator", Discriminators.Uri.ERROR);
-            JsonObj error = new JsonObj();
-            error.put("class", name);
-            error.put("error", "NOT EXIST: "+resName);
-            error.put("message", th.getMessage());
-            StringWriter sw = new StringWriter();
-            th.printStackTrace(new PrintWriter(sw));
-            System.err.println(sw.toString());
-            return json.toString();
-        }
+        return this.metadata;
     }
 }
+
