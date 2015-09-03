@@ -62,6 +62,13 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
         }
     }
 
+    String getVersion() {
+        Data data = Serializer.parse(metadata, Data.class);
+        // this might be a bit risky to user "version" string directly
+        return (String)((Map) data.getPayload()).get("version");
+    }
+
+
     protected static void putFeature(Map mapFeature, String key, Object obj) {
         if (key != null && obj != null) {
             mapFeature.put(key, obj.toString());

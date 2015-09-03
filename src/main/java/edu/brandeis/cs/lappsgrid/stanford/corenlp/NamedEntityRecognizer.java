@@ -37,12 +37,6 @@ public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService
                 PROP_POS_TAG, PROP_LEMMA, PROP_NER);
     }
 
-    String getVersion() {
-        Data data = Serializer.parse(getMetadata(), Data.class);
-        ServiceMetadata metadata = new ServiceMetadata((Map) data.getPayload());
-        return metadata.getVersion();
-    }
-
     @Override
     public String execute(Container container) throws StanfordWebServiceException {
 
@@ -50,7 +44,9 @@ public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService
         View view = container.newView();
         // TODO 150902 make clear what 'type' parameter does
 //        view.addContains(Uri.NE, this.getClass().getName(), "ner:stanford"); // old value
-        view.addContains(Uri.NE, this.getClass().getName(), Uri.NE);
+        view.addContains(Uri.NE,
+                String.format("%s:%s", this.getClass().getName(),getVersion()),
+                Uri.NE);
         int id = -1;
         edu.stanford.nlp.pipeline.Annotation annotation
                 = new edu.stanford.nlp.pipeline.Annotation(text);
