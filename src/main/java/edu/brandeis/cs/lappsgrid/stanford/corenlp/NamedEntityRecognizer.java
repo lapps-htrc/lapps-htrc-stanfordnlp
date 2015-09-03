@@ -1,23 +1,26 @@
 package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
-import edu.brandeis.cs.lappsgrid.Version;
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 import edu.brandeis.cs.lappsgrid.stanford.corenlp.api.INamedEntityRecognizer;
-import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations.NamedEntityTagAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.CoreMap;
-import org.lappsgrid.discriminator.Discriminators;
-import org.lappsgrid.serialization.json.JsonObj;
-import org.lappsgrid.serialization.json.LIFJsonSerialization;
+import static org.lappsgrid.discriminator.Discriminators.*;
+import org.lappsgrid.metadata.ServiceMetadata;
+import org.lappsgrid.serialization.Data;
+import org.lappsgrid.serialization.Serializer;
+import org.lappsgrid.serialization.lif.Annotation;
+import org.lappsgrid.serialization.lif.Container;
+import org.lappsgrid.serialization.lif.View;
+import org.lappsgrid.vocabulary.Features;
 
 import java.util.List;
+import java.util.Map;
 
 /**
- * 
+ *
  * The Language Application Grid: A Framework for Rapid Adaptation and Reuse
  * <p>
  * Lapps Grid project TODO.
@@ -26,65 +29,73 @@ import java.util.List;
  *
  */
 public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService
-		implements INamedEntityRecognizer {
+        implements INamedEntityRecognizer {
 
 
-	public NamedEntityRecognizer() {
-		this.init(PROP_TOKENIZE, PROP_SENTENCE_SPLIT,
+    public NamedEntityRecognizer() {
+        this.init(PROP_TOKENIZE, PROP_SENTENCE_SPLIT,
                 PROP_POS_TAG, PROP_LEMMA, PROP_NER);
-	}
+    }
+
+    String getVersion() {
+        Data data = Serializer.parse(getMetadata(), Data.class);
+        ServiceMetadata metadata = new ServiceMetadata((Map) data.getPayload());
+        return metadata.getVersion();
+    }
 
     @Override
-    public String execute(LIFJsonSerialization json) throws StanfordWebServiceException {
+    public String execute(Container container) throws StanfordWebServiceException {
 
-        String txt = json.getText();
-        JsonObj view = json.newView();
-        json.newContains(view, Discriminators.Uri.NE,
-                "ner:stanford", this.getClass().getName() + ":" + Version.getVersion());
-        // NLP processing
-        Annotation annotation = new Annotation(txt);
+        String text = container.getText();
+        View view = container.newView();
+        // TODO 150902 make clear what 'type' parameter does
+//        view.addContains(Uri.NE, this.getClass().getName(), "ner:stanford"); // old value
+        view.addContains(Uri.NE, this.getClass().getName(), Uri.NE);
+        int id = -1;
+        edu.stanford.nlp.pipeline.Annotation annotation
+                = new edu.stanford.nlp.pipeline.Annotation(text);
         snlp.annotate(annotation);
-        List<CoreMap> list = annotation.get(SentencesAnnotation.class);
-        for (CoreMap sent : list) {
+        List<CoreMap> sents = annotation.get(SentencesAnnotation.class);
+        for (CoreMap sent : sents) {
             for (CoreLabel token : sent.get(TokensAnnotation.class)) {
                 String  ner = token.ner();
                 if(ner != null && !ner.equalsIgnoreCase("O")) {
-                    JsonObj ann = json.newAnnotation(view, Discriminators.Uri.NE);
-					json.setType(ann, Discriminators.Uri.NE);
-                    json.setStart(ann, token.beginPosition());
-                    json.setEnd(ann, token.endPosition());
-                    json.setWord(ann, token.value());
-                    json.setCategory(ann, ner);
+                    Annotation a = view.newAnnotation(
+                            "ne" + (++id), Uri.TOKEN,
+                            token.beginPosition(), token.endPosition());
+                    a.addFeature(Features.Token.WORD, token.value());
+                    a.addFeature(Features.Token.NER, ner);
                 }
             }
         }
-        return json.toString();
+        return Serializer.toJson(container);
     }
 
-	@Override
-	public String find(String docs) {		
-		Annotation annotation = new Annotation(docs);
-		snlp.annotate(annotation);
-		
-		StringBuffer sb = new StringBuffer();
-		
-		List<CoreMap> sentences = annotation.get(SentencesAnnotation.class);
-		for (CoreMap sentence1 : sentences) {
-			for (CoreLabel token : sentence1.get(TokensAnnotation.class)) {
-				String ne = token.get(NamedEntityTagAnnotation.class);
-				if ( ne.equalsIgnoreCase("O") ){
-					sb.append(token.value());	
-				}
-				else {
-					sb.append("<").append(ne).append(">");
-					sb.append(token.value());
-					sb.append("</").append(ne).append(">");
-				}
-				sb.append(" ");
-			}
-		}
-		// return null;
-		return sb.substring(0, sb.length() - 1);
-	}
+    @Override
+    public String find(String docs) {
+        edu.stanford.nlp.pipeline.Annotation annotation
+                = new edu.stanford.nlp.pipeline.Annotation(docs);
+        snlp.annotate(annotation);
+
+        StringBuffer sb = new StringBuffer();
+
+        List<CoreMap> sentences = annotation.get(SentencesAnnotation.class);
+        for (CoreMap sentence1 : sentences) {
+            for (CoreLabel token : sentence1.get(TokensAnnotation.class)) {
+                String ne = token.get(NamedEntityTagAnnotation.class);
+                if ( ne.equalsIgnoreCase("O") ){
+                    sb.append(token.value());
+                }
+                else {
+                    sb.append("<").append(ne).append(">");
+                    sb.append(token.value());
+                    sb.append("</").append(ne).append(">");
+                }
+                sb.append(" ");
+            }
+        }
+        // return null;
+        return sb.substring(0, sb.length() - 1);
+    }
 
 }

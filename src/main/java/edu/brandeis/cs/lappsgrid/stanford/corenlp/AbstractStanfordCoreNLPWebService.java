@@ -1,12 +1,14 @@
 package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
+import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import org.apache.xerces.impl.io.UTF8Reader;
 import org.lappsgrid.api.WebService;
-import org.lappsgrid.discriminator.Discriminators;
 import org.lappsgrid.metadata.ServiceMetadata;
+import static org.lappsgrid.discriminator.Discriminators.*;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
+import org.lappsgrid.serialization.lif.Container;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +18,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
+
 
 /**
  * <a href="http://nlp.stanford.edu/software/corenlp.shtml" target="_blank">
@@ -59,8 +62,6 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
         }
     }
 
-
-
     protected static void putFeature(Map mapFeature, String key, Object obj) {
         if (key != null && obj != null) {
             mapFeature.put(key, obj.toString());
@@ -97,39 +98,38 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
         return val;
     }
 
-
-
     @Override
-    public String execute(String s) {
-        return null;
-    }
-        /*
-        LIFJsonSerialization json = null;
-        try{
-            s = s.trim();
-            if (s.startsWith("{") && s.endsWith("}")) {
-                json = new LIFJsonSerialization(s);
-                if (json.getDiscriminator().equals(Discriminators.Uri.ERROR)) {
-                    return json.toString();
-                }
-            } else {
-                json = new LIFJsonSerialization();
-                json.setText(s);
-            }
-            return execute(json);
-        }catch(Throwable th) {
-            json = new LIFJsonSerialization();
-            StringWriter sw = new StringWriter();
-            th.printStackTrace( new PrintWriter(sw));
-            json.setError(th.toString(), sw.toString());
-            System.err.println(sw.toString());
-            return json.toString();
+    /**
+     * This is default execute: takes a json string, wrap it as a LIF, run relevant modules
+     */
+    public String execute(String input) {
+        Data data = Serializer.parse(input, Data.class);
+
+        final String discr = data.getDiscriminator();
+        Container cont = null;
+
+        switch (discr) {
+            case Uri.ERROR:
+                return input;
+            case Uri.LIF:
+                cont = new Container((Map) data.getPayload());
+                break;
+            default:
+                String message =
+                        String.format("Unsupported discriminator type: %s", discr);
+                return new Data<>(Uri.ERROR, message).asJson();
+        }
+
+        try {
+            return execute(cont);
+        } catch (Throwable th) {
+            String message =
+                    String.format("Error processing input: %s", th.toString());
+            return new Data<>(Uri.ERROR, message).asJson();
         }
     }
 
-
-    public abstract String execute(LIFJsonSerialization json) throws StanfordWebServiceException;
-    */
+    public abstract String execute(Container json) throws StanfordWebServiceException;
 
     public void loadMetadata() throws IOException {
         // get caller name using reflection
@@ -147,12 +147,12 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
             try {
                 Scanner s = new Scanner(reader).useDelimiter("\\A");
                 String metadataText = s.hasNext() ? s.next() : "";
-                this.metadata = (new Data<>(Discriminators.Uri.META,
+                this.metadata = (new Data<>(Uri.META,
                         Serializer.parse(metadataText, ServiceMetadata.class))).asPrettyJson();
             } catch (Exception e) {
                 String message = "Unable to parse json for " + this.getClass().getName();
                 logger.error(message, e);
-                this.metadata = (new Data<>(Discriminators.Uri.ERROR, message)).asPrettyJson();
+                this.metadata = (new Data<>(Uri.ERROR, message)).asPrettyJson();
             }
             reader.close();
         }

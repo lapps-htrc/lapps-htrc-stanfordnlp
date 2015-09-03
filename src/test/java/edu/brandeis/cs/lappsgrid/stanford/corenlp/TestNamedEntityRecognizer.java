@@ -3,9 +3,11 @@ package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 import org.junit.Assert;
 import org.junit.Test;
+import static org.lappsgrid.discriminator.Discriminators.*;
 import org.lappsgrid.metadata.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
+import org.lappsgrid.serialization.lif.Container;
 
 import java.util.Map;
 
@@ -56,37 +58,18 @@ public class TestNamedEntityRecognizer {
 
     @Test
     public void testExecute(){
+        // TODO complete here
 
-        System.out.println("/-----------------------------------\\");
-
-        /*
-        String json = ner.execute("Mike");
-        System.out.println(json);
-        Container container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
-
-        json = ner.execute("Hello Mike");
-        System.out.println(json);
-        container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
-
-        json = ner.execute(jsons.get("payload1.json"));
-        System.out.println(json);
-        container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
-
-        json = ner.execute(jsons.get("payload2.json"));
-        System.out.println(json);
-        container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
-
-        json = ner.execute(jsons.get("payload3.json"));
-        System.out.println(json);
-        container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
-
-        json = ner.execute(jsons.get("tokens.json"));
-        System.out.println(json);
-        container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
-        */
-
-
-        System.out.println("\\-----------------------------------/\n");
+        String text = "Hello Mike.";
+        Data data = Serializer.parse(ner.getMetadata(), Data.class);
+        ServiceMetadata metadata = new ServiceMetadata((Map) data.getPayload());
+        Container container = new Container();
+        container.setText(text);
+        container.setLanguage("en");
+//        container.setMetadata(metadata);
+        String result = ner.execute(new Data<Container>(Uri.LIF, container).asPrettyJson());
+        System.out.println(result);
+        assert true;
     }
 
 }
