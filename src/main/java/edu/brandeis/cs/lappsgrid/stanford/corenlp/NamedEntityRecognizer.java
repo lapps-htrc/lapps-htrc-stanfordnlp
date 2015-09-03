@@ -7,8 +7,6 @@ import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.util.CoreMap;
-import static org.lappsgrid.discriminator.Discriminators.*;
-import org.lappsgrid.metadata.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Annotation;
@@ -17,7 +15,8 @@ import org.lappsgrid.serialization.lif.View;
 import org.lappsgrid.vocabulary.Features;
 
 import java.util.List;
-import java.util.Map;
+
+import static org.lappsgrid.discriminator.Discriminators.Uri;
 
 /**
  *
@@ -42,9 +41,7 @@ public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService
 
         String text = container.getText();
         View view = container.newView();
-        // TODO 150902 make clear what 'type' parameter does
-//        view.addContains(Uri.NE, this.getClass().getName(), "ner:stanford"); // old value
-        view.addContains(Uri.NE,
+        view.addContains("ner:stanford",
                 String.format("%s:%s", this.getClass().getName(),getVersion()),
                 Uri.NE);
         int id = -1;
@@ -54,7 +51,7 @@ public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService
         List<CoreMap> sents = annotation.get(SentencesAnnotation.class);
         for (CoreMap sent : sents) {
             for (CoreLabel token : sent.get(TokensAnnotation.class)) {
-                String  ner = token.ner();
+                String ner = token.ner();
                 if(ner != null && !ner.equalsIgnoreCase("O")) {
                     Annotation a = view.newAnnotation(
                             "ne" + (++id), Uri.TOKEN,
@@ -64,7 +61,10 @@ public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService
                 }
             }
         }
-        return Serializer.toJson(container);
+        // TODO 150903 LIF? JSONLD?
+//        Data<Container> data = new Data<>(Uri.LIF, container);
+        Data<Container> data = new Data<>(Uri.JSON_LD, container);
+        return Serializer.toJson(data);
     }
 
     @Override
