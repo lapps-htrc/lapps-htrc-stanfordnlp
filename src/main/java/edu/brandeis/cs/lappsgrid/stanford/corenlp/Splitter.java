@@ -1,63 +1,70 @@
 package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
-import edu.brandeis.cs.lappsgrid.Version;
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 import edu.brandeis.cs.lappsgrid.stanford.corenlp.api.ISplitter;
-import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetEndAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
-import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.CoreMap;
-import org.lappsgrid.discriminator.Discriminators;
-import org.lappsgrid.serialization.json.JsonObj;
-import org.lappsgrid.serialization.json.LIFJsonSerialization;
+import org.lappsgrid.serialization.Data;
+import org.lappsgrid.serialization.Serializer;
+import org.lappsgrid.serialization.lif.Annotation;
+import org.lappsgrid.serialization.lif.Container;
+import org.lappsgrid.serialization.lif.View;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.lappsgrid.discriminator.Discriminators.Uri;
+
 public class Splitter extends AbstractStanfordCoreNLPWebService implements
-		ISplitter {
+        ISplitter {
 
-	public Splitter() {
+    public Splitter() {
         this.init(PROP_TOKENIZE, PROP_SENTENCE_SPLIT);
-	}
-
-    @Override
-    public String execute(LIFJsonSerialization json) throws StanfordWebServiceException {
-        String txt = json.getText();
-
-        JsonObj view = json.newView();
-        json.newContains(view, Discriminators.Uri.SENTENCE,
-                "splitter:stanford", this.getClass().getName() + ":" + Version.getVersion());
-        // NLP processing
-        Annotation annotation = new Annotation(txt);
-        snlp.annotate(annotation);
-
-        List<CoreMap> list = annotation.get(SentencesAnnotation.class);
-        int cntsent = 0;
-        for (CoreMap sent : list) {
-            JsonObj jsonann = json.newAnnotation(view);
-            int start = sent.get(CoreAnnotations.CharacterOffsetBeginAnnotation.class);
-            int end = sent.get(CoreAnnotations.CharacterOffsetEndAnnotation.class);
-            json.setId(jsonann, "st"+cntsent++);
-            json.setType(jsonann, Discriminators.Uri.SENTENCE);
-            json.setStart(jsonann, start);
-            json.setEnd(jsonann, end);
-            json.setSentence(jsonann, sent.toString());
-        }
-        return json.toString();
     }
 
-	@Override
-	public String[] split(String docs) {
-		Annotation annotation = new Annotation(docs);
-		snlp.annotate(annotation);
-		
-		ArrayList<String> list = new ArrayList<String> ();
-		
-		List<CoreMap> sentences = annotation.get(SentencesAnnotation.class);
-		for (CoreMap sentence1 : sentences) {
-			list.add(sentence1.toString());
-		}
-		return list.toArray(new String[list.size()]);
-	}
+    @Override
+    public String execute(Container container) throws StanfordWebServiceException {
+
+        String text = container.getText();
+        View view = container.newView();
+        view.addContains("ner:stanford",
+                String.format("%s:%s", this.getClass().getName(), getVersion()),
+                Uri.NE);
+        edu.stanford.nlp.pipeline.Annotation annotation
+                = new edu.stanford.nlp.pipeline.Annotation(text);
+        snlp.annotate(annotation);
+        int id = -1;
+        List<CoreMap> sents = annotation.get(SentencesAnnotation.class);
+        for (CoreMap sent : sents) {
+            int start = sent.get(CharacterOffsetBeginAnnotation.class);
+            int end = sent.get(CharacterOffsetEndAnnotation.class);
+            Annotation a = view.newAnnotation(
+                    "s" + (++id), Uri.SENTENCE, start, end);
+//             TODO 150903 no 'text' feature for sentences?
+//            a.addFeature(Features.Sentence.???)
+        }
+
+//         TODO 150903 LIF? JSONLD?
+//        Data<Container> data = new Data<>(Uri.LIF, container);
+        Data<Container> data = new Data<>(Uri.JSON_LD, container);
+        return Serializer.toJson(data);
+    }
+
+
+    @Override
+    public String[] split(String docs) {
+        edu.stanford.nlp.pipeline.Annotation annotation
+                = new edu.stanford.nlp.pipeline.Annotation(docs);
+        snlp.annotate(annotation);
+
+        ArrayList<String> list = new ArrayList<String> ();
+
+        List<CoreMap> sentences = annotation.get(SentencesAnnotation.class);
+        for (CoreMap sentence1 : sentences) {
+            list.add(sentence1.toString());
+        }
+        return list.toArray(new String[list.size()]);
+    }
 }
