@@ -195,9 +195,20 @@ public class LIFJsonSerialization {
     public void setWord(JsonObj annotation, String word) {
         setFeature(annotation, "word", word);
     }
+    protected static String [] Categories = new String [] {
+            Discriminators.Uri.PERSON,
+            Discriminators.Uri.DATE,
+            Discriminators.Uri.ORGANIZATION,
+            Discriminators.Uri.LOCATION
+    };
 
     public void setCategory(JsonObj annotation, String word) {
         setFeature(annotation, "category", word);
+        for (String cat : Categories) {
+            if(cat.toLowerCase().contains(word.toLowerCase() )) {
+                setFeature(annotation, "category", cat);
+            }
+        }
     }
 
     public List<JsonObj> getLastViewAnnotations() {
