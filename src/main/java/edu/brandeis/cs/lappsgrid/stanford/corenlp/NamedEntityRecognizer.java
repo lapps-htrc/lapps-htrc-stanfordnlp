@@ -9,10 +9,8 @@ import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.util.CoreMap;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
-import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
 import org.lappsgrid.serialization.lif.View;
-import org.lappsgrid.vocabulary.Features;
 
 import java.util.List;
 
@@ -41,9 +39,9 @@ public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService
 
         String text = container.getText();
         View view = container.newView();
-        view.addContains("ner:stanford",
-                String.format("%s:%s", this.getClass().getName(),getVersion()),
-                Uri.NE);
+        view.addContains(Uri.NE,
+                String.format("%s:%s", this.getClass().getName(), getVersion()),
+                "ner:stanford");
         int id = -1;
         edu.stanford.nlp.pipeline.Annotation annotation
                 = new edu.stanford.nlp.pipeline.Annotation(text);
@@ -53,17 +51,24 @@ public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService
             for (CoreLabel token : sent.get(TokensAnnotation.class)) {
                 String ner = token.ner();
                 if(ner != null && !ner.equalsIgnoreCase("O")) {
-                    Annotation a = view.newAnnotation(
-                            "ne" + (++id), Uri.TOKEN,
+                    String type = null;
+                    switch (ner.toLowerCase()) {
+                        case "person": type = Uri.PERSON;
+                            break;
+                        case "location": type = Uri.LOCATION;
+                            break;
+                        case "date": type = Uri.DATE;
+                            break;
+                        case "organization": type = Uri.ORGANIZATION;
+                            break;
+                    }
+                    view.newAnnotation("ne" + (++id), type,
                             token.beginPosition(), token.endPosition());
-                    a.addFeature(Features.Token.WORD, token.value());
-                    a.addFeature(Features.Token.NER, ner);
                 }
             }
         }
-        // TODO 150903 LIF? JSONLD?
-//        Data<Container> data = new Data<>(Uri.LIF, container);
-        Data<Container> data = new Data<>(Uri.JSON_LD, container);
+        // set discriminator to LIF since, this produces LIF (as specified in metadata)
+        Data<Container> data = new Data<>(Uri.LIF, container);
         return Serializer.toJson(data);
     }
 
