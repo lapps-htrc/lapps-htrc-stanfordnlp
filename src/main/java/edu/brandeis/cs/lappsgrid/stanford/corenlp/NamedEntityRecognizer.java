@@ -35,7 +35,8 @@ public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService
     }
 
     @Override
-    public String execute(Container container) throws StanfordWebServiceException {
+    public String execute(Container container)
+            throws StanfordWebServiceException {
 
         String text = container.getText();
         View view = container.newView();
@@ -67,7 +68,7 @@ public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService
                 }
             }
         }
-        // set discriminator to LIF since, this produces LIF (as specified in metadata)
+        // set discriminator to LIF
         Data<Container> data = new Data<>(Uri.LIF, container);
         return Serializer.toJson(data);
     }

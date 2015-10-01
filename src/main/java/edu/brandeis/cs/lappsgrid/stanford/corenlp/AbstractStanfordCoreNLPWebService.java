@@ -34,26 +34,31 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public abstract class AbstractStanfordCoreNLPWebService implements WebService {
 
-	protected static final Logger logger = LoggerFactory
-			.getLogger(AbstractStanfordCoreNLPWebService.class);
+    protected static final Logger log = LoggerFactory
+            .getLogger(AbstractStanfordCoreNLPWebService.class);
+
 
     static protected ConcurrentHashMap<String, StanfordCoreNLP> cache =
             new ConcurrentHashMap<String, StanfordCoreNLP>();
 
-	public static final String PROP_TOKENIZE = "tokenize";
-	public static final String PROP_SENTENCE_SPLIT = "ssplit";
-	public static final String PROP_POS_TAG = "pos";
-	public static final String PROP_LEMMA = "lemma";
-	public static final String PROP_NER = "ner";
-	public static final String PROP_PARSE = "parse";
-	public static final String PROP_CORERENCE = "dcoref";
+    public static final String PROP_TOKENIZE = "tokenize";
+    public static final String PROP_SENTENCE_SPLIT = "ssplit";
+    public static final String PROP_POS_TAG = "pos";
+    public static final String PROP_LEMMA = "lemma";
+    public static final String PROP_NER = "ner";
+    public static final String PROP_PARSE = "parse";
+    public static final String PROP_CORERENCE = "dcoref";
     public static final String PROP_KEY = "annotators";
+    public static final String VERSION = "version";
 
-	protected Properties props = new Properties();
-	StanfordCoreNLP snlp = null;
+    protected Properties props = new Properties();
+    StanfordCoreNLP snlp = null;
 
     private String metadata;
 
+    /**
+     * Default constructor only tries to load metadata.
+     */
     public AbstractStanfordCoreNLPWebService() {
         try {
             loadMetadata();
@@ -62,12 +67,14 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
         }
     }
 
+    /**
+     * Get version from metadata
+     */
     String getVersion() {
         Data data = Serializer.parse(metadata, Data.class);
         // this might be a bit risky to user "version" string directly
-        return (String)((Map) data.getPayload()).get("version");
+        return (String)((Map) data.getPayload()).get(VERSION);
     }
-
 
     protected static void putFeature(Map mapFeature, String key, Object obj) {
         if (key != null && obj != null) {
@@ -75,55 +82,57 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
         }
     }
 
+    /**
+     * Initiate stanford NLP
+     * @param tools
+     */
     protected void init(String ... tools) {
         props.clear();
-
-        StringBuilder sb = new StringBuilder();
-        for(String tool: tools) {
-            sb.append(tool).append(" ");
+        String toolList;
+        if (tools.length > 1) {
+            StringBuilder sb = new StringBuilder();
+            for(String tool: tools) {
+                sb.append(tool).append(" ");
+            }
+            toolList = sb.toString();
+        } else {
+            toolList = tools[0];
         }
-        props.put(PROP_KEY, sb.toString().trim());
-        snlp = getCached(props);
+        props.put(PROP_KEY, toolList);
+        snlp = getProcessor(props);
     }
 
-	protected void init(String toolList) {
-		props.clear();
-		props.put(PROP_KEY, toolList);
-		snlp = getCached(props);
-	}
-
-
-    protected StanfordCoreNLP getCached (Properties props) {
+    protected StanfordCoreNLP getProcessor(Properties props) {
         String key = props.getProperty(PROP_KEY);
-        System.out.println("-----------------");
-        System.out.println(key);
+        log.info(String.format("Retriveing from cache: %s", key));
         StanfordCoreNLP val = cache.get(key);
         if (val == null) {
             val = new StanfordCoreNLP(props);
             cache.put(key, val);
+            log.info(String.format("No cached found, newly cached: %s", key));
         }
         return val;
     }
 
     @Override
     /**
-     * This is default execute: takes a json string, wrap it as a LIF, run relevant modules
+     * This is default execute: takes a json, wrap it as a LIF, run modules
      */
     public String execute(String input) {
         Data data = Serializer.parse(input, Data.class);
 
-        final String discr = data.getDiscriminator();
-        Container cont = null;
+        final String discriminator = data.getDiscriminator();
+        Container cont;
 
-        switch (discr) {
+        switch (discriminator) {
             case Uri.ERROR:
                 return input;
             case Uri.LIF:
                 cont = new Container((Map) data.getPayload());
                 break;
             default:
-                String message =
-                        String.format("Unsupported discriminator type: %s", discr);
+                String message = String.format
+                        ("Unsupported discriminator type: %s", discriminator);
                 return new Data<>(Uri.ERROR, message).asJson();
         }
 
@@ -136,18 +145,22 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
         }
     }
 
-    public abstract String execute(Container json) throws StanfordWebServiceException;
+    /**
+     * This will be overridden for each module
+     */
+    public abstract String execute(Container json)
+            throws StanfordWebServiceException;
 
     public void loadMetadata() throws IOException {
         // get caller name using reflection
         String serviceName = this.getClass().getName();
         String resName = "/metadata/"+ serviceName +".json";
-        logger.info("load resources:" + resName);
+        log.info("load resources:" + resName);
         InputStream inputStream = this.getClass().getResourceAsStream(resName);
 
         if (inputStream == null) {
             String message = "Unable to load metadata file for " + this.getClass().getName();
-            logger.error(message);
+            log.error(message);
             throw new IOException(message);
         } else {
             UTF8Reader reader = new UTF8Reader(inputStream);
@@ -158,7 +171,7 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
                         Serializer.parse(metadataText, ServiceMetadata.class))).asPrettyJson();
             } catch (Exception e) {
                 String message = "Unable to parse json for " + this.getClass().getName();
-                logger.error(message, e);
+                log.error(message, e);
                 this.metadata = (new Data<>(Uri.ERROR, message)).asPrettyJson();
             }
             reader.close();

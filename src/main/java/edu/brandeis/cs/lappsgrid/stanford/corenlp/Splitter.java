@@ -11,6 +11,7 @@ import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
 import org.lappsgrid.serialization.lif.View;
+import org.lappsgrid.vocabulary.Features;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,9 +30,9 @@ public class Splitter extends AbstractStanfordCoreNLPWebService implements
 
         String text = container.getText();
         View view = container.newView();
-        view.addContains("ner:stanford",
+        view.addContains(Uri.SENTENCE,
                 String.format("%s:%s", this.getClass().getName(), getVersion()),
-                Uri.NE);
+                "splitter:stanford");
         edu.stanford.nlp.pipeline.Annotation annotation
                 = new edu.stanford.nlp.pipeline.Annotation(text);
         snlp.annotate(annotation);
@@ -40,15 +41,10 @@ public class Splitter extends AbstractStanfordCoreNLPWebService implements
         for (CoreMap sent : sents) {
             int start = sent.get(CharacterOffsetBeginAnnotation.class);
             int end = sent.get(CharacterOffsetEndAnnotation.class);
-            Annotation a = view.newAnnotation(
-                    "s" + (++id), Uri.SENTENCE, start, end);
-//             TODO 150903 no 'text' feature for sentences?
-//            a.addFeature(Features.Sentence.???)
+            view.newAnnotation("s" + (++id), Uri.SENTENCE, start, end);
         }
-
-//         TODO 150903 LIF? JSONLD?
-//        Data<Container> data = new Data<>(Uri.LIF, container);
-        Data<Container> data = new Data<>(Uri.JSON_LD, container);
+        // set discriminator to LIF
+        Data<Container> data = new Data<>(Uri.LIF, container);
         return Serializer.toJson(data);
     }
 

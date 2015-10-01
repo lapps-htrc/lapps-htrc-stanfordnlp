@@ -30,10 +30,9 @@ public class Tokenizer extends AbstractStanfordCoreNLPWebService implements
 
         String text = container.getText();
         View view = container.newView();
-
-        view.addContains("tokenizer:stanford",
+        view.addContains(Uri.TOKEN,
                 String.format("%s:%s", this.getClass().getName(),getVersion()),
-                Uri.TOKEN);
+                "tokenizer:stanford");
 
         // run stanford module
         edu.stanford.nlp.pipeline.Annotation annotation
@@ -44,17 +43,13 @@ public class Tokenizer extends AbstractStanfordCoreNLPWebService implements
         for (CoreMap sent : sents) {
             int tid = 0;
             for (CoreLabel token : sent.get(TokensAnnotation.class)) {
-                Annotation a = view.newAnnotation(
-                        "tk_"+sid+"_"+tid++, Uri.TOKEN,
+                view.newAnnotation(String.format("tk_%d_%d", sid, tid), Uri.TOKEN,
                         token.beginPosition(), token.endPosition());
-                a.addFeature(Features.Token.WORD, token.value());
-
             }
             sid++;
         }
-        // TODO 150903 LIF? JSONLD?
-//        Data<Container> data = new Data<>(Uri.LIF, container);
-        Data<Container> data = new Data<>(Uri.JSON_LD, container);
+        // set discriminator to LIF
+        Data<Container> data = new Data<>(Uri.LIF, container);
         return Serializer.toJson(data);
     }
 

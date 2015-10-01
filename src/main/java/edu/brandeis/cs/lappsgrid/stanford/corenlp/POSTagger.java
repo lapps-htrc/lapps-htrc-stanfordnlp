@@ -28,13 +28,14 @@ public class POSTagger extends AbstractStanfordCoreNLPWebService implements
     }
 
     @Override
-    public String execute(Container container) throws StanfordWebServiceException {
+    public String execute(Container container)
+            throws StanfordWebServiceException {
 
         String text = container.getText();
         View view = container.newView();
-        view.addContains("tagger:stanford",
-                String.format("%s:%s", this.getClass().getName(),getVersion()),
-                Uri.POS);
+        view.addContains(Uri.POS,
+                String.format("%s:%s", this.getClass().getName(), getVersion()),
+                "tagger:stanford");
         edu.stanford.nlp.pipeline.Annotation annotation
                 = new edu.stanford.nlp.pipeline.Annotation(text);
         snlp.annotate(annotation);
@@ -52,9 +53,7 @@ public class POSTagger extends AbstractStanfordCoreNLPWebService implements
             }
         }
 
-        // TODO 150903 LIF? JSONLD?
-//        Data<Container> data = new Data<>(Uri.LIF, container);
-        Data<Container> data = new Data<>(Uri.JSON_LD, container);
+        Data<Container> data = new Data<>(Uri.LIF, container);
         return Serializer.toJson(data);
     }
 
