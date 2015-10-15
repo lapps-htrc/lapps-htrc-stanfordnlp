@@ -45,6 +45,7 @@ public class Tokenizer extends AbstractStanfordCoreNLPWebService implements
             for (CoreLabel token : sent.get(TokensAnnotation.class)) {
                 view.newAnnotation(String.format("tk_%d_%d", sid, tid), Uri.TOKEN,
                         token.beginPosition(), token.endPosition());
+                tid++;
             }
             sid++;
         }
