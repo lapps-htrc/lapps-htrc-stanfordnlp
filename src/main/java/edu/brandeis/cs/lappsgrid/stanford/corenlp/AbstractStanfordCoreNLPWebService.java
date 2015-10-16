@@ -139,6 +139,7 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
         try {
             return execute(cont);
         } catch (Throwable th) {
+            th.printStackTrace();
             String message =
                     String.format("Error processing input: %s", th.toString());
             return new Data<>(Uri.ERROR, message).asJson();
