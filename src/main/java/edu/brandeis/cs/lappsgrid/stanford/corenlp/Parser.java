@@ -1,6 +1,5 @@
 package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
-import edu.brandeis.cs.lappsgrid.Version;
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 import edu.brandeis.cs.lappsgrid.stanford.corenlp.api.IParser;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
@@ -11,12 +10,8 @@ import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
 import edu.stanford.nlp.util.CoreMap;
-import edu.stanford.nlp.util.IntPair;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
-import org.lappsgrid.serialization.json.JsonArr;
-import org.lappsgrid.serialization.json.JsonObj;
-import org.lappsgrid.serialization.json.LIFJsonSerialization;
 import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
 import org.lappsgrid.serialization.lif.View;
@@ -30,7 +25,11 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
 
 public class Parser extends AbstractStanfordCoreNLPWebService implements
         IParser {
+
+    // TODO add these strings to vocab
     static final String PSVOCAB = "http://vocab.lappsgrid.org/PhraseStructure";
+    static final String CONVOCAB = "http://vocab.lappsgrid.org/Constituent";
+    static final String DELIMITER = ":";
 
     public Parser() {
         this.init(PROP_TOKENIZE, PROP_SENTENCE_SPLIT, PROP_PARSE);
@@ -42,70 +41,76 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
         String text = container.getText();
 
         // Prepare two containers, one for tokens and one for parse trees
-        View tokens = container.newView();
-        tokens.setId("v1");
-        tokens.addContains(Uri.TOKEN,
+        View tokenized = container.newView();
+        tokenized.setId("v1");
+        tokenized.addContains(Uri.TOKEN,
                 String.format("%s:%s", this.getClass().getName(), getVersion()),
                 "tokenizer:stanford");
-        View parses = container.newView();
-        parses.setId("v2");
-        parses.addContains(PSVOCAB,
+
+        View parsed = container.newView();
+        parsed.setId("v2");
+        parsed.addContains(PSVOCAB,
                 String.format("%s:%s", this.getClass().getName(), getVersion()),
                 "syntacticparser:stanford");
 
         edu.stanford.nlp.pipeline.Annotation annotation
                 = new edu.stanford.nlp.pipeline.Annotation(text);
         snlp.annotate(annotation);
-        int sid = 0;
-        int cid = 0;
-        Map<String , String > map = new HashMap<>();
         List<CoreMap> sents = annotation.get(SentencesAnnotation.class);
 
+        int sid = 0;
         for (CoreMap sent : sents) {
-            // populate tokens container
+
+            // first, populate tokenization view
+            Map<String, String> tokenIndex = new HashMap<>();
             int tid = 0;
             for (CoreLabel token : sent.get(TokensAnnotation.class)) {
-                tokens.newAnnotation(String.format("tk_%d_%d", sid, tid), Uri.TOKEN,
-                        token.beginPosition(), token.endPosition());
-                tid++;
+                String tokenId = String.format("tk_%d_%d", sid, tid++);
+                tokenIndex.put(token.word(), tokenId);
+                tokenized.newAnnotation(tokenId,
+                        Uri.TOKEN, token.beginPosition(), token.endPosition());
             }
 
-            Annotation a = parses.newAnnotation(
-                    "ps" + (sid), PSVOCAB,
+            // then populate constituents view, using token ID map from above
+            int cid = 0;
+            Annotation ps = parsed.newAnnotation( "ps" + (sid), PSVOCAB,
                     sent.get(CharacterOffsetBeginAnnotation.class),
                     sent.get(CharacterOffsetEndAnnotation.class));
             Tree root = sent.get(TreeAnnotation.class);
-            Queue<Tree> nodeQueue = new LinkedList<>();
-            IntPair pair = root.getSpan();
-
+            Queue<Tree> queue = new LinkedList<>();
+            queue.add(root);
             List<String> allConstituents = new LinkedList<>();
+            int nextNonTerminal = 1;
+            while (!queue.isEmpty()) {
+                Tree cur = queue.remove();
+                if (cur.numChildren() != 0) {
+                    String curID = "c_" + cid++;
+                    allConstituents.add(curID);
+                    String curLabel = cur.label().value();
+                    Annotation constituent = parsed.newAnnotation(curID, CONVOCAB);
+                    constituent.setLabel(curLabel);
+                    ArrayList<String> childrenIDs = new ArrayList<>();
 
-//            a.addFeature(Features.Constituent.START, String.valueOf(pair.elems()[0]));
-//            a.addFeature(Features.Constituent.END, String.valueOf(pair.elems()[1]));
-            // TODO 150903 add pennString as well, somehow
-            // TODO continue from here to queue/deque children and put children names to parents' list of children
-
-            while (!nodeQueue.isEmpty()) {
-                Tree parent = nodeQueue.remove();
-            }
-
-
-            for (CoreLabel token : sent.get(TokensAnnotation.class)) {
-                String ner = token.ner();
-                if (ner != null && !ner.equalsIgnoreCase("O")) {
-                    Annotation a = view.newAnnotation(
-                            "ne" + (++sid), Uri.??? token.beginPosition(), token.endPosition());
-                    a.addFeature(Features.Token.WORD, token.value());
-                    a.addFeature(Features.Token.NER, ner);
+                    for (Tree child : cur.getChildrenAsList()) {
+                        queue.add(child);
+                        if (child.numChildren() > 0) {
+                            childrenIDs.add("c_" + nextNonTerminal++);
+                        } else {
+                            childrenIDs.add(String.format("%s%s%s",
+                                    tokenized.getId(),
+                                    DELIMITER,
+                                    tokenIndex.get(child.value())));
+                        }
+                    }
+                    constituent.addFeature("children", childrenIDs.toString());
                 }
             }
             sid++;
-            a.addFeature(Features.PhraseStructure.CONSTITUENTS, allConstituents.toString());
+            ps.addFeature(Features.PhraseStructure.CONSTITUENTS,
+                    allConstituents.toString());
         }
 
-        // TODO 150903 LIF? JSONLD?
-//        Data<Container> data = new Data<>(Uri.LIF, container);
-        Data<Container> data = new Data<>(Uri.JSON_LD, container);
+        Data<Container> data = new Data<>(Uri.LIF, container);
         return Serializer.toJson(data);
     }
 
