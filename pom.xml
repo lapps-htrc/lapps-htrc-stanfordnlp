@@ -51,6 +51,35 @@
             </snapshots>
         </repository>
     </repositories>
+
+    <pluginRepositories> 
+        <pluginRepository>
+            <id>the Maven central repository</id>
+            <url>http://repo.maven.apache.org/maven2/</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>anc-releases</id>
+            <url>http://www.anc.org:8080/nexus/content/repositories/releases/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>anc-snapshots</id>
+            <url>http://www.anc.org:8080/nexus/content/repositories/snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+    
     <dependencies>
         <dependency>
             <groupId>edu.stanford.nlp</groupId>
@@ -153,23 +182,23 @@
                 </configuration>
             </plugin>
 
-            <!--<plugin>-->
-                <!--<groupId>org.anc.maven.plugins</groupId>-->
-                <!--<artifactId>anc-maven-plugin</artifactId>-->
-                <!--<version>1.0.4</version>-->
-                <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<id>version-class</id>-->
-                        <!--<phase>generate-sources</phase>-->
-                        <!--<goals>-->
-                            <!--<goal>version-class</goal>-->
-                        <!--</goals>-->
-                    <!--</execution>-->
-                <!--</executions>-->
-                <!--<configuration>-->
-                    <!--<package>edu.brandeis.cs.lappsgrid</package>-->
-                <!--</configuration>-->
-            <!--</plugin>-->
+            <plugin>
+                <groupId>org.anc.maven.plugins</groupId>
+                <artifactId>anc-maven-plugin</artifactId>
+                <version>1.0.4</version>
+                <executions>
+                    <execution>
+                        <id>version-class</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>version-class</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <package>edu.brandeis.cs.lappsgrid</package>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
