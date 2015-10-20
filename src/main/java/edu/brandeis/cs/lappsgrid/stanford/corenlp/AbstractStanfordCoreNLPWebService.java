@@ -39,7 +39,7 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
 
 
     static protected ConcurrentHashMap<String, StanfordCoreNLP> cache =
-            new ConcurrentHashMap<String, StanfordCoreNLP>();
+            new ConcurrentHashMap<>();
 
     public static final String PROP_TOKENIZE = "tokenize";
     public static final String PROP_SENTENCE_SPLIT = "ssplit";
@@ -72,7 +72,7 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
      */
     String getVersion() {
         Data data = Serializer.parse(metadata, Data.class);
-        // this might be a bit risky to user "version" string directly
+        // this might be a bit risky to use "version" string directly
         return (String)((Map) data.getPayload()).get(VERSION);
     }
 
@@ -119,8 +119,8 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
      * This is default execute: takes a json, wrap it as a LIF, run modules
      */
     public String execute(String input) {
-        Data data = Serializer.parse(input, Data.class);
 
+        Data data = Serializer.parse(input, Data.class);
         final String discriminator = data.getDiscriminator();
         Container cont;
 
@@ -129,6 +129,13 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
                 return input;
             case Uri.LIF:
                 cont = new Container((Map) data.getPayload());
+                break;
+            case Uri.TEXT:
+                cont = new Container();
+                cont.setText((String) data.getPayload());
+                cont.setLanguage("en");
+                cont.setMetadata((Map) Serializer.parse(
+                        this.getMetadata(), Data.class).getPayload());
                 break;
             default:
                 String message = String.format

@@ -64,18 +64,26 @@ public class TestParser extends TestService {
 
 
     @Test
-    public void testExecute(){
+    public void testExecuteLif(){
         // TODO 151015 complete here
         String text = "Programcreek is a very huge and useful website.";
 //        String text = "This is an example sentence for parser .";
         Data data = Serializer.parse(parser.getMetadata(), Data.class);
-        ServiceMetadata metadata = new ServiceMetadata((Map) data.getPayload());
         Container container = new Container();
         container.setText(text);
         container.setLanguage("en");
         container.setMetadata((Map) data.getPayload());
         String result = parser.execute(new Data<>(Uri.LIF, container).asPrettyJson());
         System.out.println(result);
+    }
+
+    @Test
+    public void testExecuteText(){
+        String text = "Programcreek is a very huge and useful website.";
+        String input = new Data<>(Uri.TEXT, text).asPrettyJson();
+        String result = parser.execute(input);
+        System.out.println(result);
+
     }
 
 }
