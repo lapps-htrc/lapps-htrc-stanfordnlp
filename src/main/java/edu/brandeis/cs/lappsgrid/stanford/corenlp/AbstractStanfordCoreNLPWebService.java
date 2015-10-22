@@ -1,11 +1,11 @@
 package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
+import edu.brandeis.cs.lappsgrid.Version;
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import org.apache.xerces.impl.io.UTF8Reader;
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.metadata.ServiceMetadata;
-import static org.lappsgrid.discriminator.Discriminators.*;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Container;
@@ -18,6 +18,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static org.lappsgrid.discriminator.Discriminators.Uri;
 
 
 /**
@@ -71,9 +73,7 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
      * Get version from metadata
      */
     String getVersion() {
-        Data data = Serializer.parse(metadata, Data.class);
-        // this might be a bit risky to use "version" string directly
-        return (String)((Map) data.getPayload()).get(VERSION);
+        return Version.getVersion();
     }
 
     protected static void putFeature(Map mapFeature, String key, Object obj) {
