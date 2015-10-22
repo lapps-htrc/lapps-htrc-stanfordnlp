@@ -46,7 +46,8 @@ public class TestService {
         Container container = new Container();
         container.setText(plainText);
         container.setLanguage("en");
-        container.setMetadata((Map) data.getPayload());
+        // return empty metadata for process result (for now)
+//        container.setMetadata((Map) data.getPayload());
         return container;
     }
 

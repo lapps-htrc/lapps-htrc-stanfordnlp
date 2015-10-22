@@ -147,8 +147,9 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
                 cont = new Container();
                 cont.setText((String) data.getPayload());
                 cont.setLanguage("en");
-                cont.setMetadata((Map) Serializer.parse(
-                        this.getMetadata(), Data.class).getPayload());
+                // return empty metadata for process result (for now)
+//                cont.setMetadata((Map) Serializer.parse(
+//                        this.getMetadata(), Data.class).getPayload());
                 break;
             default:
                 String message = String.format
