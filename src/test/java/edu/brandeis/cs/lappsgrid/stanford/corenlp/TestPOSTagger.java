@@ -3,11 +3,6 @@ package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 import org.junit.Assert;
 import org.junit.Test;
-import org.lappsgrid.serialization.Data;
-import org.lappsgrid.serialization.Serializer;
-import org.lappsgrid.serialization.lif.Container;
-
-import java.util.Map;
 
 /**
  * <i>TestPOSTagger.java</i> Language Application Grids (<b>LAPPS</b>)
@@ -35,8 +30,9 @@ public class TestPOSTagger extends TestService {
 	}
 
     @Test
-    public void testExecute(){{
+    public void testExecute(){
 
+        /*
         System.out.println("/-----------------------------------\\");
 
         String json = postagger.execute("Good");
@@ -66,10 +62,7 @@ public class TestPOSTagger extends TestService {
 
 
         System.out.println("\\-----------------------------------/\n");
+         */
+
     }
-    }
-
-
-
-
 }

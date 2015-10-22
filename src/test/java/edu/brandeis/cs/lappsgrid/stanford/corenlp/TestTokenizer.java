@@ -3,11 +3,6 @@ package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 import org.junit.Assert;
 import org.junit.Test;
-import org.lappsgrid.serialization.Data;
-import org.lappsgrid.serialization.Serializer;
-import org.lappsgrid.serialization.lif.Container;
-
-import java.util.Map;
 
 
 /**
@@ -37,6 +32,7 @@ public class TestTokenizer extends TestService {
 
     @Test
     public void testExecute(){
+        /*
         System.out.println("/-----------------------------------\\");
         String json = tokenizer.execute(jsons.get("payload1.json"));
         System.out.println(json);
@@ -56,5 +52,6 @@ public class TestTokenizer extends TestService {
         container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
 
         System.out.println("\\-----------------------------------/\n");
+        */
     }
 }
