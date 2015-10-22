@@ -63,7 +63,7 @@ public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService
                         case "organization": type = Uri.ORGANIZATION;
                             break;
                     }
-                    newAnnotation(view, "ne" + (++id), type,
+                    newAnnotation(view, NE_ID + (++id), type,
                             token.beginPosition(), token.endPosition());
                 }
             }

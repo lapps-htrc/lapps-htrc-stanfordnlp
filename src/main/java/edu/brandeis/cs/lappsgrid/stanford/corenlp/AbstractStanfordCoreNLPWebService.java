@@ -55,6 +55,17 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
     public static final String PROP_KEY = "annotators";
     public static final String VERSION = "version";
 
+    public static final String TOKEN_ID = "tk_";
+    public static final String SENT_ID = "s_";
+    public static final String CONSTITUENT_ID = "c_";
+    public static final String PS_ID = "ps_";
+    public static final String DEPENDENCY_ID = "dep_";
+    public static final String DS_ID = "ds_";
+    public static final String MENTION_ID = "m_";
+    public static final String COREF_ID = "coref_";
+    public static final String NE_ID = "ne_";
+
+
     protected Properties props = new Properties();
     StanfordCoreNLP snlp = null;
 

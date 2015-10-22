@@ -46,7 +46,7 @@ public class POSTagger extends AbstractStanfordCoreNLPWebService implements
             int tid = 0;
             for (CoreLabel token : sent.get(TokensAnnotation.class)) {
                 Annotation a = newAnnotation(view,
-                        "tk_" + sid + "_" + tid++, Uri.POS,
+                        String.format("%s%d_%d", TOKEN_ID, sid, tid++), Uri.POS,
                         token.beginPosition(), token.endPosition());
                 a.addFeature(Features.Token.PART_OF_SPEECH, token.get(PartOfSpeechAnnotation.class));
                 a.addFeature(Features.Token.WORD, token.value());

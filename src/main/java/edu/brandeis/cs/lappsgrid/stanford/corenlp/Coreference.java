@@ -61,7 +61,7 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
             Map<String, String> tokenIndex = new HashMap<>();
             int tid = 0;
             for (CoreLabel token : sent.get(TokensAnnotation.class)) {
-                String tokenId = String.format("tk_%d_%d", sid, tid++);
+                String tokenId = String.format("%s%d_%d", TOKEN_ID, sid, tid++);
                 tokenIndex.put(token.word(), tokenId);
                 newAnnotation(view, tokenId,
                         Uri.TOKEN, token.beginPosition(), token.endPosition());
@@ -82,8 +82,8 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
                 List<CoreLabel> tokens = sent.get(TokensAnnotation.class);
                 int mBegin = tokens.get(mention.startIndex - 1).beginPosition();
                 int mEnd = tokens.get(mention.endIndex - 2).endPosition();
-                Annotation mentionAnn = newAnnotation(view, "m_" + mention.mentionID,
-                        Uri.MARKABLE, mBegin, mEnd);
+                Annotation mentionAnn = newAnnotation(view,
+                        MENTION_ID + mention.mentionID, Uri.MARKABLE, mBegin, mEnd);
                 mentionAnn.addFeature("words", text.substring(mBegin, mEnd));
                 mentionAnn.addFeature("sentenceIndex", Integer.toString(mention.sentNum - 1));
                 ArrayList<String> targets = new ArrayList<>();
@@ -97,7 +97,7 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
 
             // TODO 151017 current corefId will be the same as mentionID of representative,
             // should we use incremental ID starting from 0 (or 1) ?
-            Annotation chain = newAnnotation(view, "coref_" + corefId, Uri.COREF);
+            Annotation chain = newAnnotation(view, COREF_ID + corefId, Uri.COREF);
             chain.addFeature("representative",
                     "m_" + coref.getRepresentativeMention().mentionID);
             chain.getFeatures().put("mentions", mentionIds);

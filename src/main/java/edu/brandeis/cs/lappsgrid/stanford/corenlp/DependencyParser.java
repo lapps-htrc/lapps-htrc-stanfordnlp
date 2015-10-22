@@ -53,7 +53,7 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService implemen
         for (CoreMap sent : list) {
             int start = sent.get(CharacterOffsetBeginAnnotation.class);
             int end = sent.get(CharacterOffsetEndAnnotation.class);
-            Annotation ann = newAnnotation(view, "ds_" + cntSent,
+            Annotation ann = newAnnotation(view, DS_ID + cntSent,
                     Uri.DENDENCY_STRUCTURE, start, end);
 
             ann.addFeature("sentence", sent.toString());
@@ -61,7 +61,8 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService implemen
             int cntEdge = 0;
             List<String> dependencies = new ArrayList<>();
             for(SemanticGraphEdge edge:graph.getEdgeSet()) {
-                String id =  "dep_"+cntSent+"_"+cntEdge++;
+                String id = String.format("%s%d_%d",
+                        DEPENDENCY_ID, cntSent, cntEdge++);
                 dependencies.add(id);
 
 //                Map dep = new LinkedHashMap();
@@ -105,7 +106,7 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService implemen
     }
 
     private String makeTokenId(int sid, int tid) {
-        return String.format("tk_%d_%d", sid, tid);
+        return String.format("%s%d_%d", TOKEN_ID, sid, tid);
     }
 
     @Override

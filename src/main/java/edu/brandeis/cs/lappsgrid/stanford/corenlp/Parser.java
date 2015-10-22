@@ -59,7 +59,7 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
             Map<String, String> tokenIndex = new HashMap<>();
             int tid = 0;
             for (CoreLabel token : sent.get(TokensAnnotation.class)) {
-                String tokenId = String.format("tk_%d_%d", sid, tid++);
+                String tokenId = String.format("%s%d_%d", TOKEN_ID, sid, tid++);
                 tokenIndex.put(token.word(), tokenId);
                 Annotation a = newAnnotation(view, tokenId,
                         Uri.TOKEN, token.beginPosition(), token.endPosition());
@@ -71,7 +71,7 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
             // constituents indexed left-right breadth-first
             // leaves are indexed by stanford (off by 1 from tokenIDs from above)
             int cid = 0;
-            Annotation ps = newAnnotation(view, "ps" + (sid), Uri.PHRASE_STRUCTURE,
+            Annotation ps = newAnnotation(view, PS_ID + sid, Uri.PHRASE_STRUCTURE,
                     sent.get(CharacterOffsetBeginAnnotation.class),
                     sent.get(CharacterOffsetEndAnnotation.class));
             Tree root = sent.get(TreeAnnotation.class);
@@ -83,10 +83,12 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
             while (!queue.isEmpty()) {
                 Tree cur = queue.remove();
                 if (cur.numChildren() != 0) {
-                    String curID = String.format("c_%d_%d" , sid, cid++);
+                    String curID = String.format(
+                            "%s%d_%d", CONSTITUENT_ID, sid, cid++);
                     allConstituents.add(curID);
                     String curLabel = cur.label().value();
-                    Annotation constituent = newAnnotation(view, curID, Uri.CONSTITUENT);
+                    Annotation constituent
+                            = newAnnotation(view, curID, Uri.CONSTITUENT);
                     constituent.setLabel(curLabel);
                     ArrayList<String> childrenIDs = new ArrayList<>();
 
