@@ -5,11 +5,15 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.lappsgrid.serialization.Data;
+import org.lappsgrid.serialization.Serializer;
+import org.lappsgrid.serialization.lif.Container;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Chunqi SHI (shicq@cs.brandeis.edu) on 3/5/14.
@@ -18,6 +22,7 @@ public class TestService {
 
 
     protected HashMap<String,String> jsons = new HashMap<String,String>();
+    AbstractStanfordCoreNLPWebService service;
 
     public static String getResource(String name) throws IOException{
         java.io.InputStream in =  TestService.class.getClassLoader().getResourceAsStream(name);
@@ -36,6 +41,18 @@ public class TestService {
         }
     }
 
+    protected Container wrapContainer(String plainText) {
+        Data data = Serializer.parse(service.getMetadata(), Data.class);
+        Container container = new Container();
+        container.setText(plainText);
+        container.setLanguage("en");
+        container.setMetadata((Map) data.getPayload());
+        return container;
+    }
+
+    protected Container reconstructPayload(String json) {
+        return new Container((Map) Serializer.parse(json, Data.class).getPayload());
+    }
 
     @Test
     public void test() {

@@ -1,15 +1,15 @@
 package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
-import org.junit.Assert;
 import org.junit.Test;
-import org.lappsgrid.metadata.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Container;
+import org.lappsgrid.serialization.lif.View;
 
-import java.util.Map;
+import java.util.List;
 
+import static org.junit.Assert.*;
 import static org.lappsgrid.discriminator.Discriminators.Uri;
 
 /**
@@ -25,65 +25,38 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
  */
 public class TestParser extends TestService {
 
-    Parser parser;
+    String testSent = "Programcreek is a very huge and useful website.";
 
     public TestParser() throws StanfordWebServiceException {
-        parser = new Parser();
+        service = new Parser();
     }
 
     @Test
-    public void testParser() {
-        String print = parser.parse("Programcreek is a very huge and useful website.");
-        String goldPrint = "(ROOT (S) )"
-                + "(S (NP) (VP) (.) )"
-                + "(NP (NNP) )"
-                + "(NNP (Programcreek-1) )"
-                + "(Programcreek-1 )"
-                + "(VP (VBZ) (NP) )"
-                + "(VBZ (is-2) )"
-                + "(is-2 )"
-                + "(NP (DT) (ADJP) (NN) )"
-                + "(DT (a-3) )"
-                + "(a-3 )"
-                + "(ADJP (RB) (JJ) (CC) (JJ) )"
-                + "(RB (very-4) )"
-                + "(very-4 )"
-                + "(JJ (huge-5) )"
-                + "(huge-5 )"
-                + "(CC (and-6) )"
-                + "(and-6 )"
-                + "(JJ (useful-7) )"
-                + "(useful-7 )"
-                + "(NN (website-8) )"
-                + "(website-8 )"
-                + "(. (.-9) )"
-                + "(.-9 )";
-//		Assert.assertEquals("Parse Failure.", print.replace("\n",""), goldPrint);
-        Assert.assertTrue(print.contains("ROOT"));
-    }
-
-
-    @Test
-    public void testExecuteLif(){
-        // TODO 151015 complete here
-        String text = "Programcreek is a very huge and useful website.";
-//        String text = "This is an example sentence for parser .";
-        Data data = Serializer.parse(parser.getMetadata(), Data.class);
-        Container container = new Container();
-        container.setText(text);
-        container.setLanguage("en");
-        container.setMetadata((Map) data.getPayload());
-        String result = parser.execute(new Data<>(Uri.LIF, container).asPrettyJson());
-        System.out.println(result);
+    public void testExecute(){
+        String input = new Data<>(Uri.LIF, wrapContainer(testSent)).asJson();
+        String result = service.execute(input);
+        Container resultContainer = reconstructPayload(result);
+        assertEquals("Text is corrupted.", resultContainer.getText(), testSent);
+        List<View> views = resultContainer.getViews();
+        View view = resultContainer.getView(0);
+        if (views.size() != 1) {
+            fail(String.format("Expected 1 view. Found: %d", views.size()));
+        }
+        assertTrue("Not containing tokens", view.contains(Uri.TOKEN));
+        assertTrue("Not containing constituents", view.contains(Uri.CONSTITUENT));
+        assertTrue("Not containing phrase structure", view.contains(Uri.PHRASE_STRUCTURE));
+        System.out.println(Serializer.toPrettyJson(resultContainer));
     }
 
     @Test
     public void testExecuteText(){
-        String text = "Programcreek is a very huge and useful website.";
-        String input = new Data<>(Uri.TEXT, text).asPrettyJson();
-        String result = parser.execute(input);
-        System.out.println(result);
-
+        String input = new Data<>(Uri.LIF, wrapContainer(testSent)).asJson();
+        String lifResult = Serializer.toJson(
+                reconstructPayload(service.execute(input)));
+        input = new Data<>(Uri.TEXT, testSent).asPrettyJson();
+        String textResult = Serializer.toJson(
+                reconstructPayload(service.execute(input)));
+        assertEquals("Results are not matching", lifResult, textResult);
     }
 
 }

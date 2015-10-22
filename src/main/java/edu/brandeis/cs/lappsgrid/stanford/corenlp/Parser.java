@@ -26,10 +26,6 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
 public class Parser extends AbstractStanfordCoreNLPWebService implements
         IParser {
 
-    // TODO add these strings to vocab
-    static final String PSVOCAB = "http://vocab.lappsgrid.org/PhraseStructure";
-    static final String CONVOCAB = "http://vocab.lappsgrid.org/Constituent";
-    static final String DELIMITER = ":";
 
     public Parser() {
         this.init(PROP_TOKENIZE, PROP_SENTENCE_SPLIT, PROP_PARSE);
@@ -40,16 +36,14 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
 
         String text = container.getText();
 
-        // Prepare two containers, one for tokens and one for parse trees
-        View tokenized = container.newView();
-        tokenized.setId("v1");
-        tokenized.addContains(Uri.TOKEN,
+        View view = container.newView();
+        view.addContains(Uri.TOKEN,
                 String.format("%s:%s", this.getClass().getName(), getVersion()),
                 "tokenizer:stanford");
-
-        View parsed = container.newView();
-        parsed.setId("v2");
-        parsed.addContains(PSVOCAB,
+        view.addContains(Uri.PHRASE_STRUCTURE,
+                String.format("%s:%s", this.getClass().getName(), getVersion()),
+                "syntacticparser:stanford");
+        view.addContains(Uri.CONSTITUENT,
                 String.format("%s:%s", this.getClass().getName(), getVersion()),
                 "syntacticparser:stanford");
 
@@ -61,22 +55,25 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
         int sid = 0;
         for (CoreMap sent : sents) {
 
-            // first, populate tokenization view
+            // first, populate tokens
             Map<String, String> tokenIndex = new HashMap<>();
             int tid = 0;
             for (CoreLabel token : sent.get(TokensAnnotation.class)) {
                 String tokenId = String.format("tk_%d_%d", sid, tid++);
                 tokenIndex.put(token.word(), tokenId);
-                tokenized.newAnnotation(tokenId,
+                view.newAnnotation(tokenId,
                         Uri.TOKEN, token.beginPosition(), token.endPosition());
             }
 
-            // then populate constituents view, using token ID map from above
+            // then populate constituents.
+            // constituents indexed left-right breadth-first
+            // leaves are indexed by stanford (off by 1 from tokenIDs from above)
             int cid = 0;
-            Annotation ps = parsed.newAnnotation( "ps" + (sid), PSVOCAB,
+            Annotation ps = view.newAnnotation( "ps" + (sid), Uri.PHRASE_STRUCTURE,
                     sent.get(CharacterOffsetBeginAnnotation.class),
                     sent.get(CharacterOffsetEndAnnotation.class));
             Tree root = sent.get(TreeAnnotation.class);
+            root.indexLeaves(true);
             Queue<Tree> queue = new LinkedList<>();
             queue.add(root);
             List<String> allConstituents = new LinkedList<>();
@@ -87,7 +84,7 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
                     String curID = "c_" + cid++;
                     allConstituents.add(curID);
                     String curLabel = cur.label().value();
-                    Annotation constituent = parsed.newAnnotation(curID, CONVOCAB);
+                    Annotation constituent = view.newAnnotation(curID, Uri.CONSTITUENT);
                     constituent.setLabel(curLabel);
                     ArrayList<String> childrenIDs = new ArrayList<>();
 
@@ -96,13 +93,11 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
                         if (child.numChildren() > 0) {
                             childrenIDs.add("c_" + nextNonTerminal++);
                         } else {
-                            childrenIDs.add(String.format("%s%s%s",
-                                    tokenized.getId(),
-                                    DELIMITER,
-                                    tokenIndex.get(child.value())));
+                            childrenIDs.add(String.format("tk_%d_%d", sid,
+                            ((CoreLabel) child.label()).index() - 1));
                         }
                     }
-                    constituent.addFeature("children", childrenIDs.toString());
+                    constituent.getFeatures().put("children", childrenIDs);
                 }
             }
             sid++;
