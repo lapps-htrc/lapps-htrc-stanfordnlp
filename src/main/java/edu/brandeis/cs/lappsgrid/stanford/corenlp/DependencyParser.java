@@ -33,12 +33,11 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService implemen
         String text = container.getText();
         View view = container.newView();
         view.addContains("http://vocab.lappsgrid.org/DependencyStructure", this.getClass().getName(), Version.getVersion());
-        view.addContains(Discriminators.Uri.TOKEN , this.getClass().getName(), Version.getVersion());
+        view.addContains(Discriminators.Uri.TOKEN, this.getClass().getName(), Version.getVersion());
 
 //        // NLP processing
         Annotation doc = new Annotation(text);
         snlp.annotate(doc);
-        Map<String, String> map = new HashMap<String, String>();
 //
         List<CoreMap> list = doc.get(SentencesAnnotation.class);
         int cntSent = 0;
@@ -52,21 +51,33 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService implemen
             SemanticGraph graph = sent.get(SemanticGraphCoreAnnotations.BasicDependenciesAnnotation.class);
 //
             int cntEdge = 0;
-            List<Map> dependencies = new ArrayList<>();
+            List<String> dependencies = new ArrayList<>();
             for(SemanticGraphEdge edge:graph.getEdgeSet()) {
-                Map dep = new LinkedHashMap();
-                dep.put("id", "dep_"+cntSent+"_"+cntEdge++);
-                dep.put("label", edge.getRelation().toString());
-                Map feats = new LinkedHashMap();
-                dep.put("features", feats);
-                feats.put("governor", "tk" + cntSent + "_" + edge.getGovernor().index());
-                feats.put("governor_word", edge.getGovernor().word());
-                feats.put("dependent","tk" + cntSent + "_" + edge.getDependent().index());
-                feats.put("dependent_word", edge.getDependent().word());
-                
-                dependencies.add(dep);
+                String id =  "dep_"+cntSent+"_"+cntEdge++;
+                dependencies.add(id);
+
+//                Map dep = new LinkedHashMap();
+//                dep.put("id", id);
+//                dep.put("label", edge.getRelation().toString());
+//                Map feats = new LinkedHashMap();
+//                dep.put("features", feats);
+//                feats.put("governor", "tk" + cntSent + "_" + edge.getGovernor().index());
+//                feats.put("governor_word", edge.getGovernor().word());
+//                feats.put("dependent","tk" + cntSent + "_" + edge.getDependent().index());
+//                feats.put("dependent_word", edge.getDependent().word());
+
+                org.lappsgrid.serialization.lif.Annotation depann = view.newAnnotation("dp" + cntSent,
+                        "http://vocab.lappsgrid.org/Dependency", start, end);
+                depann.setId(id);
+                depann.setLabel(edge.getRelation().toString());
+                depann.addFeature("governor", "tk" + cntSent + "_" + edge.getGovernor().index());
+                depann.addFeature("governor_word", edge.getGovernor().word());
+                depann.addFeature("dependent", "tk" + cntSent + "_" + edge.getDependent().index());
+                depann.addFeature("dependent_word", edge.getDependent().word());
+
             }
             ann.getFeatures().put("dependencies", dependencies);
+
 
             int cntToken = 1;
             for (CoreLabel token : sent.get(CoreAnnotations.TokensAnnotation.class)) {
