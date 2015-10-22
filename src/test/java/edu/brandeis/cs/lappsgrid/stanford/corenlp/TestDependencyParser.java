@@ -7,8 +7,14 @@ import org.lappsgrid.metadata.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Container;
+import org.lappsgrid.serialization.lif.View;
 
+import java.util.List;
 import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * <i>TestParser.java</i> Language Application Grids (<b>LAPPS</b>)
@@ -17,38 +23,30 @@ import java.util.Map;
  * <p> 
  *
  * @author Chunqi Shi ( <i>shicq@cs.brandeis.edu</i> )<br>Nov 20, 2013<br>
- * 
+ *
  */
 public class TestDependencyParser extends TestService {
 
-	DependencyParser parser;
+    String testSent = "Hi, Programcreek is a very huge and useful website.";
 
-	public TestDependencyParser() throws StanfordWebServiceException {
-		parser = new DependencyParser();
-	}
-	
-	@Test
-	public void testParser() {
-		String print = parser.parse("Programcreek is a very huge and useful website.");
-		System.out.println(print);
-	}
-
+    public TestDependencyParser() throws StanfordWebServiceException {
+        service = new DependencyParser();
+    }
 
     @Test
     public void testExecute(){
-
-		String text = "Hi, Programcreek is a very huge and useful website.";
-		Data data = Serializer.parse(parser.getMetadata(), Data.class);
-		ServiceMetadata metadata = new ServiceMetadata((Map) data.getPayload());
-		Container container = new Container();
-		container.setText(text);
-		container.setLanguage("en");
-		container.setMetadata((Map) data.getPayload());
-		String ret = parser.execute(new Data<>(Discriminators.Uri.LIF, container).asPrettyJson());
-		System.out.println(ret);
-		System.out.println();
-//        Assert.assertTrue(ret.getPayload().contains("NN"));
-//        Assert.assertTrue(ret.getPayload().contains("by return email or by telephone"));
+        String input = new Data<>(Discriminators.Uri.LIF, wrapContainer(testSent)).asJson();
+        String result = service.execute(input);
+        Container resultContainer = reconstructPayload(result);
+        assertEquals("Text is corrupted.", resultContainer.getText(), testSent);
+        List<View> views = resultContainer.getViews();
+        if (views.size() != 1) {
+            fail(String.format("Expected 1 view. Found: %d", views.size()));
+        }
+        View view = resultContainer.getView(0);
+        assertTrue("Not containing tokens", view.contains(Discriminators.Uri.TOKEN));
+        assertTrue("Not containing dependency", view.contains(Discriminators.Uri.DEPENDENCY));
+        assertTrue("Not containing dependency structure", view.contains(Discriminators.Uri.DENDENCY_STRUCTURE));
+        System.out.println(Serializer.toPrettyJson(resultContainer));
     }
-
 }
