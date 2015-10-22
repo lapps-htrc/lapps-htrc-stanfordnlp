@@ -144,6 +144,8 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
         }
 
         try {
+            // TODO 151022 this will be redundant when @context stuff sorted out
+            cont.setContext(Container.REMOTE_CONTEXT);
             return execute(cont);
         } catch (Throwable th) {
             th.printStackTrace();

@@ -51,7 +51,11 @@ public class TestService {
     }
 
     protected Container reconstructPayload(String json) {
-        return new Container((Map) Serializer.parse(json, Data.class).getPayload());
+        Container cont =  new Container(
+                (Map) Serializer.parse(json, Data.class).getPayload());
+        // TODO 151022 this will be redundant when @context stuff sorted out
+        cont.setContext(Container.REMOTE_CONTEXT);
+        return cont;
     }
 
     @Test
