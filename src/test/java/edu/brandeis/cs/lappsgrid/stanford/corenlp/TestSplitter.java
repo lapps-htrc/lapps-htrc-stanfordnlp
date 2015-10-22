@@ -44,7 +44,7 @@ public class TestSplitter extends TestService {
         assertTrue("Not containing sentences", view.contains(Uri.SENTENCE));
         List<Annotation> annotations = view.getAnnotations();
         if (annotations.size() != 3) {
-            fail("Expected 3 sentences. Found %d" + annotations.size());
+            fail(String.format("Expected 3 sentences. Found: %d", annotations.size()));
         }
         System.out.println(Serializer.toPrettyJson(resultContainer));
     }

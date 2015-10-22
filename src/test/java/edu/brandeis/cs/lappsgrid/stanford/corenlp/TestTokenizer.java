@@ -25,7 +25,7 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
  */
 public class TestTokenizer extends TestService {
 
-    String testSent = "Hellow World.";
+    String testSent = "Hello World.";
 
 	public TestTokenizer() throws StanfordWebServiceException {
 		service = new Tokenizer();
@@ -45,7 +45,7 @@ public class TestTokenizer extends TestService {
         assertTrue("Not containing tokens", view.contains(Uri.TOKEN));
         List<Annotation> annotations = view.getAnnotations();
         if (annotations.size() != 3) {
-            fail("Expected 3 tokens. Found %d" + annotations.size());
+            fail(String.format("Expected 3 token. Found: %d", annotations.size()));
         }
         System.out.println(Serializer.toPrettyJson(resultContainer));
     }
