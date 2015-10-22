@@ -1,8 +1,17 @@
 package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
-import org.junit.Assert;
 import org.junit.Test;
+import org.lappsgrid.serialization.Data;
+import org.lappsgrid.serialization.Serializer;
+import org.lappsgrid.serialization.lif.Annotation;
+import org.lappsgrid.serialization.lif.Container;
+import org.lappsgrid.serialization.lif.View;
+
+import java.util.List;
+
+import static org.junit.Assert.*;
+import static org.lappsgrid.discriminator.Discriminators.Uri;
 
 /**
  * <i>TestSplitter.java</i> Language Application Grids (<b>LAPPS</b>)
@@ -11,44 +20,33 @@ import org.junit.Test;
  * <p> 
  *
  * @author Chunqi Shi ( <i>shicq@cs.brandeis.edu</i> )<br>Nov 20, 2013<br>
- * 
+ *
  */
 public class TestSplitter extends TestService {
-	
-	Splitter splitter;
-	
-	public TestSplitter() throws StanfordWebServiceException {
-		splitter = new Splitter();
-	}
-	
-	@Test
-	public void testSplit() {
-		String [] sents = splitter.split("Hi. How are you? This is Mike.");
-//		System.out.println(Arrays.toString(sents));
-		String [] goldSents = {"Hi.","How are you?","This is Mike."};
-		Assert.assertArrayEquals("Splitter Failure.", goldSents, sents);
-	}
 
+    String testSent = "If possible, we would appreciate comments no later than 3:00 PM EST on Sunday, August 26.  Comments can be faxed to my attention at 202/338-2416 or emailed to cfr@vnf.com or gdb@vnf.com (Gary GaryBachman).\n\nThank you.";
+
+    public TestSplitter() throws StanfordWebServiceException {
+        service = new Splitter();
+    }
 
     @Test
     public void testExecute(){
-//        ret = splitter.execute(data);
-//        Assert.assertTrue(ret.getPayload().contains("by return email or by telephone"));
-
-        /*
-        System.out.println("/-----------------------------------\\");
-        String json = splitter.execute(jsons.get("payload1.json"));
-        System.out.println(json);
-        Container container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
-
-        json = splitter.execute(jsons.get("payload2.json"));
-        System.out.println(json);
-        container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
-
-        json = splitter.execute(jsons.get("payload3.json"));
-        System.out.println(json);
-        container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
-        System.out.println("\\-----------------------------------/\n");
-        */
+        String input = new Data<>(Uri.LIF, wrapContainer(testSent)).asJson();
+        String result = service.execute(input);
+        Container resultContainer = reconstructPayload(result);
+        assertEquals("Text is corrupted.", resultContainer.getText(), testSent);
+        List<View> views = resultContainer.getViews();
+        if (views.size() != 1) {
+            fail(String.format("Expected 1 view. Found: %d", views.size()));
+        }
+        View view = resultContainer.getView(0);
+        assertTrue("Not containing sentences", view.contains(Uri.SENTENCE));
+        List<Annotation> annotations = view.getAnnotations();
+        if (annotations.size() != 3) {
+            fail("Expected 3 sentences. Found %d" + annotations.size());
+        }
+        System.out.println(Serializer.toPrettyJson(resultContainer));
     }
 }
+

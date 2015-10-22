@@ -1,8 +1,17 @@
 package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
-import org.junit.Assert;
 import org.junit.Test;
+import org.lappsgrid.serialization.Data;
+import org.lappsgrid.serialization.Serializer;
+import org.lappsgrid.serialization.lif.Annotation;
+import org.lappsgrid.serialization.lif.Container;
+import org.lappsgrid.serialization.lif.View;
+
+import java.util.List;
+
+import static org.junit.Assert.*;
+import static org.lappsgrid.discriminator.Discriminators.Uri;
 
 
 /**
@@ -15,43 +24,29 @@ import org.junit.Test;
  * 
  */
 public class TestTokenizer extends TestService {
-	
-	Tokenizer tokenizer;
-	
+
+    String testSent = "Hellow World.";
+
 	public TestTokenizer() throws StanfordWebServiceException {
-		tokenizer = new Tokenizer();
-	}
-	
-	@Test
-	public void testTokenize() {
-		String [] tokens = tokenizer.tokenize("Hi. How are you? This is Mike.");
-//		System.out.println(Arrays.toString(tokens));
-		String [] goldTokens = {"Hi",".","How","are","you","?","This","is","Mike","."};
-		Assert.assertArrayEquals("Tokenize Failure.", goldTokens, tokens);
+		service = new Tokenizer();
 	}
 
     @Test
     public void testExecute(){
-        /*
-        System.out.println("/-----------------------------------\\");
-        String json = tokenizer.execute(jsons.get("payload1.json"));
-        System.out.println(json);
-
-        Container container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
-
-        json = tokenizer.execute(jsons.get("payload2.json"));
-        System.out.println(json);
-        container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
-
-        json = tokenizer.execute(jsons.get("payload3.json"));
-        System.out.println(json);
-        container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
-
-        json = tokenizer.execute(jsons.get("splitter.json"));
-        System.out.println(json);
-        container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
-
-        System.out.println("\\-----------------------------------/\n");
-        */
+        String input = new Data<>(Uri.LIF, wrapContainer(testSent)).asJson();
+        String result = service.execute(input);
+        Container resultContainer = reconstructPayload(result);
+        assertEquals("Text is corrupted.", resultContainer.getText(), testSent);
+        List<View> views = resultContainer.getViews();
+        if (views.size() != 1) {
+            fail(String.format("Expected 1 view. Found: %d", views.size()));
+        }
+        View view = resultContainer.getView(0);
+        assertTrue("Not containing tokens", view.contains(Uri.TOKEN));
+        List<Annotation> annotations = view.getAnnotations();
+        if (annotations.size() != 3) {
+            fail("Expected 3 tokens. Found %d" + annotations.size());
+        }
+        System.out.println(Serializer.toPrettyJson(resultContainer));
     }
 }
