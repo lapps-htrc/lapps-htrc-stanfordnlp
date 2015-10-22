@@ -81,7 +81,7 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
             while (!queue.isEmpty()) {
                 Tree cur = queue.remove();
                 if (cur.numChildren() != 0) {
-                    String curID = "c_" + cid++;
+                    String curID = String.format("c_%d_%d" , sid, cid++);
                     allConstituents.add(curID);
                     String curLabel = cur.label().value();
                     Annotation constituent = view.newAnnotation(curID, Uri.CONSTITUENT);
@@ -94,7 +94,7 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
                             childrenIDs.add("c_" + nextNonTerminal++);
                         } else {
                             childrenIDs.add(String.format("tk_%d_%d", sid,
-                            ((CoreLabel) child.label()).index() - 1));
+                                    ((CoreLabel) child.label()).index() - 1));
                         }
                     }
                     constituent.getFeatures().put("children", childrenIDs);
