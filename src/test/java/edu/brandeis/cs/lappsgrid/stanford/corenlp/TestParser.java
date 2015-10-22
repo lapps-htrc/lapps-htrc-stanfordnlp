@@ -38,10 +38,10 @@ public class TestParser extends TestService {
         Container resultContainer = reconstructPayload(result);
         assertEquals("Text is corrupted.", resultContainer.getText(), testSent);
         List<View> views = resultContainer.getViews();
-        View view = resultContainer.getView(0);
         if (views.size() != 1) {
             fail(String.format("Expected 1 view. Found: %d", views.size()));
         }
+        View view = resultContainer.getView(0);
         assertTrue("Not containing tokens", view.contains(Uri.TOKEN));
         assertTrue("Not containing constituents", view.contains(Uri.CONSTITUENT));
         assertTrue("Not containing phrase structure", view.contains(Uri.PHRASE_STRUCTURE));

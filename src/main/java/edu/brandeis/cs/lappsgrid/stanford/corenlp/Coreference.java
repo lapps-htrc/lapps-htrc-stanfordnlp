@@ -22,15 +22,12 @@ import java.util.List;
 import java.util.Map;
 
 public class Coreference extends AbstractStanfordCoreNLPWebService implements
-		ICoreference {
+        ICoreference {
 
-    // TODO add these strings to vocab
-    static final String MARKABLE = "http://vocab.lappsgrid.org/Markable";
-
-	public Coreference() {
-		this.init(PROP_TOKENIZE,PROP_SENTENCE_SPLIT,
+    public Coreference() {
+        this.init(PROP_TOKENIZE,PROP_SENTENCE_SPLIT,
                 PROP_POS_TAG, PROP_LEMMA, PROP_NER, PROP_PARSE, PROP_CORERENCE);
-	}
+    }
 
     @Override
     public String execute(Container container) throws StanfordWebServiceException {
@@ -47,7 +44,7 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
                 String.format("%s:%s", this.getClass().getName(), getVersion()),
                 "coreference:stanford");
 
-        view.addContains(MARKABLE,
+        view.addContains(Uri.MARKABLE,
                 String.format("%s:%s", this.getClass().getName(), getVersion()),
                 "markable:stanford");
 
@@ -74,32 +71,26 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
         // next iteration to populate mentions and markables
 
         Map<Integer, CorefChain> corefs = annotation.get(CorefChainAnnotation.class);
-        System.out.println("SIZE: " + corefs.size());
         for(Integer corefId : corefs.keySet()) {
             CorefChain coref =   corefs.get(corefId);
             List<CorefMention> mentions = coref.getMentionsInTextualOrder();
-            System.out.println("MENTIONS SIZE: " + mentions.size());
             if(mentions.size() <= 1)
                 continue;
             ArrayList<String> mentionIds = new ArrayList<>();
             for (CorefChain.CorefMention mention : mentions) {
                 CoreMap sent = sents.get(mention.sentNum - 1);
                 List<CoreLabel> tokens = sent.get(TokensAnnotation.class);
-//                int mBegin = sent.get(TokensAnnotation.class).get(mention.startIndex - 1).beginPosition();
-//                int mEnd = sent.get(TokensAnnotation.class).get(mention.endIndex - 2).endPosition();
                 int mBegin = tokens.get(mention.startIndex - 1).beginPosition();
                 int mEnd = tokens.get(mention.endIndex - 2).endPosition();
                 Annotation mentionAnn = view.newAnnotation("m_" + mention.mentionID,
-                        MARKABLE, mBegin, mEnd);
+                        Uri.MARKABLE, mBegin, mEnd);
                 mentionAnn.addFeature("words", text.substring(mBegin, mEnd));
                 mentionAnn.addFeature("sentenceIndex", Integer.toString(mention.sentNum - 1));
-//                json.setFeature(ann,"targetStart", mention.startIndex);
-//                json.setFeature(ann,"targetEnd", mention.endIndex);
                 ArrayList<String> targets = new ArrayList<>();
                 for (int m = mention.startIndex; m < mention.endIndex; m++)
-                    // stanford index starts from 1, need to subtract 1 for each index
+                    // stanford idx starts from 1, need to subtract 1 for each index
                     targets.add("tk_" + (mention.sentNum - 1) + "_" + (m - 1));
-                mentionAnn.addFeature("targets", targets.toString());
+                mentionAnn.getFeatures().put("targets", targets);
                 mentionIds.add("m_" + mention.mentionID);
 
             }
@@ -109,7 +100,7 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
             Annotation chain = view.newAnnotation("coref_" + corefId, Uri.COREF);
             chain.addFeature("representative",
                     "m_" + coref.getRepresentativeMention().mentionID);
-            chain.addFeature("mentions", mentionIds.toString());
+            chain.getFeatures().put("mentions", mentionIds);
         }
 
         Data<Container> data = new Data<>(Uri.LIF, container);

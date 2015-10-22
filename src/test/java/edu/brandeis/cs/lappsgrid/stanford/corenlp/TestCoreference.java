@@ -1,16 +1,16 @@
 package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
-import edu.brandeis.cs.lappsgrid.stanford.corenlp.Coreference;
 import org.junit.Test;
-import org.lappsgrid.discriminator.Discriminators;
-import org.lappsgrid.metadata.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Container;
+import org.lappsgrid.serialization.lif.View;
 
-import java.util.Map;
+import java.util.List;
 
+import static org.junit.Assert.*;
+import static org.lappsgrid.discriminator.Discriminators.Uri;
 
 /**
  * <i>TestTokenizer.java</i> Language Application Grids (<b>LAPPS</b>)
@@ -23,28 +23,27 @@ import java.util.Map;
  */
 public class TestCoreference extends TestService {
 
-    Coreference coref;
+    String testSent= "Mike, Smith is a good person and he is from Boston. John and Mary went to the store. They bought some milk.";
 
     public TestCoreference() throws StanfordWebServiceException {
-        coref = new Coreference();
+        service = new Coreference();
     }
 
     @Test
     public void testExecute(){
-        // TODO 151017 complete here
-//        String text = "Sue see herself.";
-        String text = "Mike, Smith is a good person and he is from Boston. John and Mary went to the store. They bought some milk.";
-        Data data = Serializer.parse(coref.getMetadata(), Data.class);
-        ServiceMetadata metadata = new ServiceMetadata((Map) data.getPayload());
-        Container container = new Container();
-        container.setText(text);
-        container.setLanguage("en");
-        container.setMetadata((Map) data.getPayload());
-        String result = coref.execute(new Data<>(Discriminators.Uri.LIF, container).asPrettyJson());
-        System.out.println(result);
+        String input = new Data<>(Uri.LIF, wrapContainer(testSent)).asJson();
+        String result = service.execute(input);
+        Container resultContainer = reconstructPayload(result);
 
-//        json = coref.execute("Mike, Smith is a good person and he is from Boston. John and Mary went to the store. They bought some milk.");
-//        System.out.println(json);
-//        container = new Container((Map) Serializer.parse(json, Data.class).getPayload());
+        assertEquals("Text is corrupted.", resultContainer.getText(), testSent);
+        List<View> views = resultContainer.getViews();
+        if (views.size() != 1) {
+            fail(String.format("Expected 1 view. Found: %d", views.size()));
+        }
+        View view = resultContainer.getView(0);
+        assertTrue("Not containing tokens", view.contains(Uri.TOKEN));
+        assertTrue("Not containing markables", view.contains(Uri.MARKABLE));
+        assertTrue("Not containing coreference chains", view.contains(Uri.COREF));
+        System.out.println(Serializer.toPrettyJson(resultContainer));
     }
 }
