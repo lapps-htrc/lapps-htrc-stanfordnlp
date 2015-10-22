@@ -8,7 +8,9 @@ import org.lappsgrid.api.WebService;
 import org.lappsgrid.metadata.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
+import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
+import org.lappsgrid.serialization.lif.View;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -192,5 +194,27 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
     public String getMetadata() {
         return this.metadata;
     }
+
+    /**
+     * Add a new annotation to a view
+     * TODO 151022 this will be deprecated when Serialization package updated
+     * TODO 151022 also, need to find usages of these from subclasses (actual services) when time comes
+     *
+     * @param view target view to add an annotation
+     * @return a new annotation with null type and null label
+     */
+    protected Annotation newAnnotation(
+            View view, String id, String atType, long start, long end) {
+        Annotation annotation = view.newAnnotation(id, atType, start, end);
+        annotation.setLabel(null);
+        annotation.setType(null);
+        return annotation;
+    }
+
+    protected Annotation newAnnotation(
+            View view, String id, String atType) {
+        return newAnnotation(view, id, atType, -1, -1);
+    }
+
 }
 

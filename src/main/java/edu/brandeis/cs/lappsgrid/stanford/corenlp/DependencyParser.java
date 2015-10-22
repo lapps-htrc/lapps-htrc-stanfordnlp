@@ -53,7 +53,7 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService implemen
         for (CoreMap sent : list) {
             int start = sent.get(CharacterOffsetBeginAnnotation.class);
             int end = sent.get(CharacterOffsetEndAnnotation.class);
-            Annotation ann = view.newAnnotation("ds_" + cntSent,
+            Annotation ann = newAnnotation(view, "ds_" + cntSent,
                     Uri.DENDENCY_STRUCTURE, start, end);
 
             ann.addFeature("sentence", sent.toString());
@@ -74,7 +74,7 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService implemen
 //                feats.put("dependent","tk" + cntSent + "_" + edge.getDependent().index());
 //                feats.put("dependent_word", edge.getDependent().word());
 
-                Annotation dependency = view.newAnnotation(id,
+                Annotation dependency = newAnnotation(view, id,
                         Uri.DEPENDENCY);
                 dependency.setLabel(edge.getRelation().toString());
                 // stanford indexing starts from 1, for consistency, we start from 0
@@ -91,7 +91,7 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService implemen
 
             int cntToken = 0;
             for (CoreLabel token : sent.get(TokensAnnotation.class)) {
-                ann = view.newAnnotation(
+                ann = newAnnotation(view,
                         makeTokenId(cntSent, cntToken++),
                         Uri.TOKEN, token.beginPosition(), token.endPosition());
                 ann.addFeature("pos", token.tag());

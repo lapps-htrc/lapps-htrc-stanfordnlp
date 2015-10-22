@@ -41,7 +41,7 @@ public class Splitter extends AbstractStanfordCoreNLPWebService implements
         for (CoreMap sent : sents) {
             int start = sent.get(CharacterOffsetBeginAnnotation.class);
             int end = sent.get(CharacterOffsetEndAnnotation.class);
-            view.newAnnotation("s" + (++id), Uri.SENTENCE, start, end);
+            newAnnotation(view, "s" + (++id), Uri.SENTENCE, start, end);
         }
         // set discriminator to LIF
         Data<Container> data = new Data<>(Uri.LIF, container);
