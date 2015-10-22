@@ -101,8 +101,11 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
                 }
             }
             sid++;
-            ps.addFeature(Features.PhraseStructure.CONSTITUENTS,
-                    allConstituents.toString());
+            // ps.addFeature(Features.PhraseStructure.CONSTITUENTS,
+            //        allConstituents.toString());
+
+            ps.getFeatures().put(Features.PhraseStructure.CONSTITUENTS,
+                            allConstituents);
         }
 
         Data<Container> data = new Data<>(Uri.LIF, container);
