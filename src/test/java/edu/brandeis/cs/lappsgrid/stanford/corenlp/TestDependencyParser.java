@@ -37,6 +37,8 @@ public class TestDependencyParser extends TestService {
     public void testExecute(){
         String input = new Data<>(Discriminators.Uri.LIF, wrapContainer(testSent)).asJson();
         String result = service.execute(input);
+        String resulttext = service.execute(testSent);
+        assertEquals(result, resulttext);
         Container resultContainer = reconstructPayload(result);
         assertEquals("Text is corrupted.", resultContainer.getText(), testSent);
         List<View> views = resultContainer.getViews();

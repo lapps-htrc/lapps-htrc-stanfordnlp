@@ -132,8 +132,19 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
      * This is default execute: takes a json, wrap it as a LIF, run modules
      */
     public String execute(String input) {
+        if (input == null)
+            return null;
+        input = input.trim();  // remove the whitespace.
+        // in case of Json
+        Data data =  null;
+        if(input.startsWith("{") && input.endsWith("}")) {
+            data = Serializer.parse(input, Data.class);
+        } else {
+            data = new Data();
+            data.setDiscriminator(Uri.TEXT);
+            data.setPayload(input);
+        }
 
-        Data data = Serializer.parse(input, Data.class);
         final String discriminator = data.getDiscriminator();
         Container cont;
 
