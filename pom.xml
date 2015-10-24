@@ -1,14 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>edu.brandeis.cs.lapps</groupId>
     <artifactId>stanfordnlp-web-service</artifactId>
-    <version>2.0.1</version>
+    <version>2.0.1-SNAPSHOT</version>
     <packaging>war</packaging>
     <name>Web Services wrapping Stanford  CoreNLP tools</name>
     <description>
-    Publish API for the LAPPS exchange data structure (LEDS), the thing that will be serialized to from JSON-LD.
-    Provide converter for the Standford one-per-line format to LEDS.
+        Publish API for the LAPPS exchange data structure (LEDS), the thing that will be serialized to from JSON-LD.
+        Provide converter for the Standford one-per-line format to LEDS.
     </description>
     <parent>
         <artifactId>war-parent-pom</artifactId>
@@ -19,7 +19,6 @@
 
     <!--http://www.anc.org:8080/Versions/-->
     <properties>
-        <lapps.version>2.0.0</lapps.version>
         <anc.common>3.4.0</anc.common>
         <stanford.version>3.3.1</stanford.version>
     </properties>
@@ -52,7 +51,7 @@
         </repository>
     </repositories>
 
-    <pluginRepositories> 
+    <pluginRepositories>
         <pluginRepository>
             <id>the Maven central repository</id>
             <url>http://repo.maven.apache.org/maven2/</url>
@@ -79,7 +78,7 @@
             </snapshots>
         </pluginRepository>
     </pluginRepositories>
-    
+
     <dependencies>
         <dependency>
             <groupId>org.lappsgrid</groupId>
