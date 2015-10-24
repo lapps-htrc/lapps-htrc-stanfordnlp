@@ -65,16 +65,6 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService implemen
                         DEPENDENCY_ID, cntSent, cntEdge++);
                 dependencies.add(id);
 
-//                Map dep = new LinkedHashMap();
-//                dep.put("id", id);
-//                dep.put("label", edge.getRelation().toString());
-//                Map feats = new LinkedHashMap();
-//                dep.put("features", feats);
-//                feats.put("governor", "tk" + cntSent + "_" + edge.getGovernor().index());
-//                feats.put("governor_word", edge.getGovernor().word());
-//                feats.put("dependent","tk" + cntSent + "_" + edge.getDependent().index());
-//                feats.put("dependent_word", edge.getDependent().word());
-
                 Annotation dependency = newAnnotation(view, id,
                         Uri.DEPENDENCY);
                 dependency.setLabel(edge.getRelation().toString());
