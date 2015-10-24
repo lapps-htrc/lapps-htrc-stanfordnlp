@@ -140,6 +140,9 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
         switch (discriminator) {
             case Uri.ERROR:
                 return input;
+            case Uri.JSON_LD:
+                cont = new Container((Map) data.getPayload());
+                break;
             case Uri.LIF:
                 cont = new Container((Map) data.getPayload());
                 break;
