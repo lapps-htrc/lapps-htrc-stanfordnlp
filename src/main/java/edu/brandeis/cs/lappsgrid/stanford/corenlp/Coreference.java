@@ -15,6 +15,7 @@ import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
 import org.lappsgrid.serialization.lif.View;
+import org.lappsgrid.vocabulary.Features;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -63,8 +64,10 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
             for (CoreLabel token : sent.get(TokensAnnotation.class)) {
                 String tokenId = String.format("%s%d_%d", TOKEN_ID, sid, tid++);
                 tokenIndex.put(token.word(), tokenId);
-                newAnnotation(view, tokenId,
+                Annotation ann = newAnnotation(view, tokenId,
                         Uri.TOKEN, token.beginPosition(), token.endPosition());
+                ann.addFeature("word", token.value());
+                ann.addFeature(Features.Token.POS,  token.tag());
             }
             sid++;
         }
