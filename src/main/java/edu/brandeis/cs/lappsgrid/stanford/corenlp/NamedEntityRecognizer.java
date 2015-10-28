@@ -9,6 +9,7 @@ import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.util.CoreMap;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
+import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
 import org.lappsgrid.serialization.lif.View;
 
@@ -63,8 +64,11 @@ public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService
                         case "organization": type = Uri.ORGANIZATION;
                             break;
                     }
-                    newAnnotation(view, NE_ID + (++id), type,
-                            token.beginPosition(), token.endPosition());
+                    if(type != null) {
+                        Annotation ann = newAnnotation(view, NE_ID + (++id), type,
+                                token.beginPosition(), token.endPosition());
+                        ann.addFeature("word", token.value());
+                    }
                 }
             }
         }

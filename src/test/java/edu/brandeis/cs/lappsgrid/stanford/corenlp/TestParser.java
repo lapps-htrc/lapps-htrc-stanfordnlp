@@ -26,7 +26,7 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
  */
 public class TestParser extends TestService {
 
-    String testSent = "Programcreek is a very huge and useful website.";
+    String testSent = "If possible, we would appreciate comments no later than 3:00 PM EST on Sunday, August 26.  Comments can be faxed to my attention at 202/338-2416 or emailed to cfr@vnf.com or gdb@vnf.com (Gary GaryBachman).\\n\\nThank you.";
 
     public TestParser() throws StanfordWebServiceException {
         service = new Parser();
