@@ -48,8 +48,9 @@ public class POSTagger extends AbstractStanfordCoreNLPWebService implements
                 Annotation a = newAnnotation(view,
                         String.format("%s%d_%d", TOKEN_ID, sid, tid++), Uri.POS,
                         token.beginPosition(), token.endPosition());
-                a.addFeature(Features.Token.PART_OF_SPEECH, token.get(PartOfSpeechAnnotation.class));
-                a.addFeature(Features.Token.WORD, token.value());
+                a.addFeature(Features.Token.POS, token.get(PartOfSpeechAnnotation.class));
+//                a.addFeature(Features.Token.WORD, token.value());
+                a.addFeature("word", token.value());
             }
         }
 
