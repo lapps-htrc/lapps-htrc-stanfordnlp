@@ -2,6 +2,7 @@ package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 import edu.brandeis.cs.lappsgrid.stanford.corenlp.api.IParser;
+import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetEndAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
@@ -61,10 +62,10 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
             for (CoreLabel token : sent.get(TokensAnnotation.class)) {
                 String tokenId = String.format("%s%d_%d", TOKEN_ID, sid, tid++);
                 tokenIndex.put(token.word(), tokenId);
-                Annotation a = newAnnotation(view, tokenId,
+                Annotation ann = newAnnotation(view, tokenId,
                         Uri.TOKEN, token.beginPosition(), token.endPosition());
-                a.setLabel(null);
-                a.setType(null);
+                ann.addFeature(Features.Token.POS, token.get(CoreAnnotations.PartOfSpeechAnnotation.class));
+                ann.addFeature("word", token.value());
             }
 
             // then populate constituents.
@@ -107,7 +108,8 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
             sid++;
             // ps.addFeature(Features.PhraseStructure.CONSTITUENTS,
             //        allConstituents.toString());
-
+            ps.getFeatures().put("sentence", sent.toString());
+            ps.getFeatures().put("penntree", root.pennString());
             ps.getFeatures().put(Features.PhraseStructure.CONSTITUENTS,
                             allConstituents);
         }

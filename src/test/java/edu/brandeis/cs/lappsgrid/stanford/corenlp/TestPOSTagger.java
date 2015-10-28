@@ -1,6 +1,7 @@
 package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
+import junit.framework.Assert;
 import org.junit.Test;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
@@ -24,7 +25,7 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
  */
 public class TestPOSTagger extends TestService {
 
-    String testSent = "Good morning.";
+    String testSent = "Hello World.";
 
     public TestPOSTagger() throws StanfordWebServiceException {
         service = new POSTagger();
@@ -32,8 +33,22 @@ public class TestPOSTagger extends TestService {
 
     @Test
     public void testExecute(){
+
+
+
+        String result0 = service.execute(testSent);
         String input = new Data<>(Uri.LIF, wrapContainer(testSent)).asJson();
         String result = service.execute(input);
+        Assert.assertEquals(result0, result);
+
+        System.out.println("<------------------------------------------------------------------------------");
+        System.out.println(String.format("      %s         ", this.getClass().getName()));
+        System.out.println("-------------------------------------------------------------------------------");
+        System.out.println(result);
+        System.out.println("------------------------------------------------------------------------------>");
+
+        testSent = "Good morning.";
+        result = service.execute(testSent);
         Container resultContainer = reconstructPayload(result);
         assertEquals("Text is corrupted.", resultContainer.getText(), testSent);
         List<View> views = resultContainer.getViews();
