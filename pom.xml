@@ -20,8 +20,6 @@
     <!--http://www.anc.org:8080/Versions/-->
     <properties>
         <lapps.all>2.2.0</lapps.all>
-        <lapps.discriminator>2.2.0</lapps.discriminator>
-        <lapps.serialization>2.1.0</lapps.serialization>
         <stanford.version>3.3.1</stanford.version>
     </properties>
 
@@ -87,17 +85,7 @@
             <artifactId>all</artifactId>
             <version>${lapps.all}</version>
         </dependency>
-        <dependency>
-            <groupId>org.lappsgrid</groupId>
-            <artifactId>discriminator</artifactId>
-            <version>${lapps.discriminator}</version>
-        </dependency>
 
-        <dependency>
-            <groupId>org.lappsgrid</groupId>
-            <artifactId>serialization</artifactId>
-            <version>${lapps.serialization}</version>
-        </dependency>
         <dependency>
             <groupId>org.lappsgrid</groupId>
             <artifactId>service-grid-libs</artifactId>
@@ -187,6 +175,11 @@
                 <configuration>
                     <source>1.7</source>
                     <target>1.7</target>
+                    <annotationProcessors>
+                        <annotationProcessor>
+                            org.lappsgrid.annotation.processing.MetadataProcessor
+                        </annotationProcessor>
+                    </annotationProcessors>
                 </configuration>
             </plugin>
 
