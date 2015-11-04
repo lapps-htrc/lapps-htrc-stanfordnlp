@@ -24,6 +24,12 @@ import java.util.List;
 
 import static org.lappsgrid.discriminator.Discriminators.Uri;
 
+@org.lappsgrid.annotations.ServiceMetadata(
+        description = "Stanford CoreNLP Dependency Parser",
+        requires_format = { "text", "lif" },
+        produces_format = { "lif" },
+        produces = { "dependency", "dependency-structure", "token" }
+)
 public class DependencyParser extends AbstractStanfordCoreNLPWebService implements
         IParser {
 

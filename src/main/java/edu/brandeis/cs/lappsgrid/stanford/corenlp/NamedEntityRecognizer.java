@@ -26,6 +26,13 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
  * @author Chunqi SHI (shicq@cs.brandeis.edu) <br> Jan 31, 2014 </br>
  *
  */
+
+@org.lappsgrid.annotations.ServiceMetadata(
+        description = "Stanford CoreNLP Named Entity Recognizer",
+        requires_format = { "text", "lif" },
+        produces_format = { "lif" },
+        produces = { "person", "location", "data", "organization" }
+)
 public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService
         implements INamedEntityRecognizer {
 

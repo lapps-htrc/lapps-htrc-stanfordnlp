@@ -36,6 +36,15 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
  * @author shicq@cs.brandeis.edu
  *
  */
+
+@org.lappsgrid.annotations.CommonMetadata(
+
+        vendor = "http://www.cs.brandeis.edu/",
+        license = "apache2",
+        allow = "any",
+        language = { "en" },
+        version = "2.0.1-SNAPSHOT" // this will automatically be extracted from POM, later
+)
 public abstract class AbstractStanfordCoreNLPWebService implements WebService {
 
     protected static final Logger log = LoggerFactory

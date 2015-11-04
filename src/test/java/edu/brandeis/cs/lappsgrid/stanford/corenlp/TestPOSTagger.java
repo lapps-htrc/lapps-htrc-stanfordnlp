@@ -3,6 +3,8 @@ package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 import junit.framework.Assert;
 import org.junit.Test;
+import org.lappsgrid.metadata.IOSpecification;
+import org.lappsgrid.metadata.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Annotation;
@@ -32,9 +34,17 @@ public class TestPOSTagger extends TestService {
     }
 
     @Test
+    public void testMetadata(){
+        ServiceMetadata metadata = super.testCommonMetadata();
+        IOSpecification requires = metadata.getRequires();
+        IOSpecification produces = metadata.getProduces();
+        assertEquals("Expected 1 annotation, found: " + produces.getAnnotations().size(),
+                1, produces.getAnnotations().size());
+        assertTrue("POS tags not produced", produces.getAnnotations().contains(Uri.POS));
+    }
+
+    @Test
     public void testExecute(){
-
-
 
         String result0 = service.execute(testSent);
         String input = new Data<>(Uri.LIF, wrapContainer(testSent)).asJson();

@@ -24,6 +24,12 @@ import java.util.*;
 
 import static org.lappsgrid.discriminator.Discriminators.Uri;
 
+@org.lappsgrid.annotations.ServiceMetadata(
+        description = "Stanford CoreNLP Coreference",
+        requires_format = { "text", "lif" },
+        produces_format = { "lif" },
+        produces = { "constituent", "token", "phrase-structure" }
+)
 public class Parser extends AbstractStanfordCoreNLPWebService implements
         IParser {
 
@@ -111,7 +117,7 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
             ps.getFeatures().put("sentence", sent.toString());
             ps.getFeatures().put("penntree", root.pennString());
             ps.getFeatures().put(Features.PhraseStructure.CONSTITUENTS,
-                            allConstituents);
+                    allConstituents);
         }
 
         Data<Container> data = new Data<>(Uri.LIF, container);

@@ -18,6 +18,12 @@ import java.util.List;
 
 import static org.lappsgrid.discriminator.Discriminators.Uri;
 
+@org.lappsgrid.annotations.ServiceMetadata(
+        description = "Stanford CoreNLP Splitter",
+        requires_format = { "text", "lif" },
+        produces_format = { "lif" },
+        produces = { "sentence" }
+)
 public class Splitter extends AbstractStanfordCoreNLPWebService implements
         ISplitter {
 

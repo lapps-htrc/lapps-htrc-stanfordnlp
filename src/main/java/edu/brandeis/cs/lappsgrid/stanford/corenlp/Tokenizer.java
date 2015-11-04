@@ -18,6 +18,12 @@ import java.util.List;
 
 import static org.lappsgrid.discriminator.Discriminators.Uri;
 
+@org.lappsgrid.annotations.ServiceMetadata(
+        description = "Stanford CoreNLP Coreference",
+        requires_format = { "text", "lif" },
+        produces_format = { "lif" },
+        produces = { "token" }
+)
 public class Tokenizer extends AbstractStanfordCoreNLPWebService implements
         ITokenizer {
 

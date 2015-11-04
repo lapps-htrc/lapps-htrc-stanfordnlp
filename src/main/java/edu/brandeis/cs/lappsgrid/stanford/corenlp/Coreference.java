@@ -22,6 +22,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@org.lappsgrid.annotations.ServiceMetadata(
+        description = "Stanford CoreNLP Coreference",
+        requires_format = { "text", "lif" },
+        produces_format = { "lif" },
+        produces = { "coref", "token", "markable" }
+)
 public class Coreference extends AbstractStanfordCoreNLPWebService implements
         ICoreference {
 
