@@ -5,7 +5,7 @@
     <artifactId>stanfordnlp-web-service</artifactId>
     <version>2.0.2-SNAPSHOT</version>
     <packaging>war</packaging>
-    <name>Web Services wrapping Stanford  CoreNLP tools</name>
+    <name>Brandeis Web Services wrapping Stanford CoreNLP tools for Lappsgrid</name>
     <description>
         Publish API for the LAPPS exchange data structure (LEDS), the thing that will be serialized to from JSON-LD.
         Provide converter for the Standford one-per-line format to LEDS.
@@ -19,7 +19,7 @@
 
     <!--http://www.anc.org:8080/Versions/-->
     <properties>
-        <lapps.all>2.2.0</lapps.all>
+        <lapps.all>2.3.3</lapps.all>
         <stanford.version>3.3.1</stanford.version>
     </properties>
 

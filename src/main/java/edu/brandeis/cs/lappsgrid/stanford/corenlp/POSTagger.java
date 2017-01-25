@@ -20,7 +20,7 @@ import java.util.List;
 import static org.lappsgrid.discriminator.Discriminators.Uri;
 
 @org.lappsgrid.annotations.ServiceMetadata(
-        description = "Stanford CoreNLP Coreference",
+        description = "Stanford CoreNLP 3.3.1 Parts-of-speech Tagger",
         requires_format = { "text", "lif" },
         produces_format = { "lif" },
         produces = { "pos" }
@@ -50,12 +50,11 @@ public class POSTagger extends AbstractStanfordCoreNLPWebService implements
         for (CoreMap sent : sents) {
             int tid = 0;
             for (CoreLabel token : sent.get(TokensAnnotation.class)) {
-                Annotation a = newAnnotation(view,
+                Annotation a = view.newAnnotation(
                         String.format("%s%d_%d", TOKEN_ID, sid++, tid++), Uri.POS,
                         token.beginPosition(), token.endPosition());
                 a.addFeature(Features.Token.POS, token.get(PartOfSpeechAnnotation.class));
-//                a.addFeature(Features.Token.WORD, token.value());
-                a.addFeature("word", token.value());
+                a.addFeature(Features.Token.WORD, token.value());
             }
         }
 

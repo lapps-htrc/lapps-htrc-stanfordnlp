@@ -42,7 +42,7 @@ public class TestCoreference extends TestService {
                 "Expected 3 annotations, found: " + produces.getAnnotations().size(),
                 3, produces.getAnnotations().size());
         assertTrue("Tokens not produced",
-                produces.getAnnotations().contains(Uri.SENTENCE));
+                produces.getAnnotations().contains(Uri.TOKEN));
         assertTrue("Markabels not produced",
                 produces.getAnnotations().contains(Uri.MARKABLE));
         assertTrue("Coreference chains not produced",

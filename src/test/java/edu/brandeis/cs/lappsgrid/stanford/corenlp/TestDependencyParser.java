@@ -41,11 +41,11 @@ public class TestDependencyParser extends TestService {
         assertEquals("Expected 3 annotations, found: " + produces.getAnnotations().size(),
                 3, produces.getAnnotations().size());
         assertTrue("Tokens not produced",
-                produces.getAnnotations().contains(Uri.SENTENCE));
+                produces.getAnnotations().contains(Uri.TOKEN));
         assertTrue("Dependencies not produced",
                 produces.getAnnotations().contains(Uri.DEPENDENCY));
         assertTrue("Dependency Structures not produced",
-                produces.getAnnotations().contains(Uri.DENDENCY_STRUCTURE));
+                produces.getAnnotations().contains(Uri.DEPENDENCY_STRUCTURE));
     }
 
     @Test
@@ -74,7 +74,7 @@ public class TestDependencyParser extends TestService {
         View view = resultContainer.getView(0);
         assertTrue("Not containing tokens", view.contains(Uri.TOKEN));
         assertTrue("Not containing dependency", view.contains(Uri.DEPENDENCY));
-        assertTrue("Not containing dependency structure", view.contains(Uri.DENDENCY_STRUCTURE));
+        assertTrue("Not containing dependency structure", view.contains(Uri.DEPENDENCY_STRUCTURE));
         System.out.println(Serializer.toPrettyJson(resultContainer));
     }
 }

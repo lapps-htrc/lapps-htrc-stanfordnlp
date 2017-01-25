@@ -24,18 +24,12 @@ public class TestService {
         Container container = new Container();
         container.setText(plainText);
         container.setLanguage("en");
-        // return empty metadata for process result (for now)
-//        Data metadata = Serializer.parse(service.getMetadata(), Data.class);
-//        container.setMetadata((Map) metadata.getPayload());
         return container;
     }
 
     protected Container reconstructPayload(String json) {
-        Container cont = new Container(
+        return new Container(
                 (Map) Serializer.parse(json, Data.class).getPayload());
-        // TODO 151022 this will be redundant when @context stuff sorted out
-        cont.setContext(Container.REMOTE_CONTEXT);
-        return cont;
     }
 
     public ServiceMetadata testCommonMetadata() {

@@ -42,7 +42,7 @@ public class TestParser extends TestService {
         assertEquals("Expected 3 annotations, found: " + produces.getAnnotations().size(),
                 3, produces.getAnnotations().size());
         assertTrue("Tokens not produced",
-                produces.getAnnotations().contains(Uri.SENTENCE));
+                produces.getAnnotations().contains(Uri.TOKEN));
         assertTrue("Constituents not produced",
                 produces.getAnnotations().contains(Uri.CONSTITUENT));
         assertTrue("Phrase structures not produced",
