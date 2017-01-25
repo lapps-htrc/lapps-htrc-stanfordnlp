@@ -1,57 +1,93 @@
 package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
+import edu.brandeis.cs.lappsgrid.Version;
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
-import org.apache.commons.io.IOUtils;
+import org.apache.xerces.impl.io.UTF8Reader;
 import org.lappsgrid.api.WebService;
-import org.lappsgrid.discriminator.Discriminators;
-import org.lappsgrid.serialization.json.JsonObj;
-import org.lappsgrid.serialization.json.LIFJsonSerialization;
+import org.lappsgrid.metadata.ServiceMetadata;
+import org.lappsgrid.serialization.Data;
+import org.lappsgrid.serialization.Serializer;
+import org.lappsgrid.serialization.lif.Annotation;
+import org.lappsgrid.serialization.lif.Container;
+import org.lappsgrid.serialization.lif.View;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static org.lappsgrid.discriminator.Discriminators.Uri;
+
 
 /**
  * <a href="http://nlp.stanford.edu/software/corenlp.shtml" target="_blank">
  * Stanford Core NLP </a> provides a collection of available NLP tools,
  * including "tokenize, ssplit, pos, lemma, ner, parse, dcoref".
- * 
+ *
  * <p>
- * 
+ *
  * They are available through unique interface called annotation.
- * 
+ *
  * @author shicq@cs.brandeis.edu
- * 
+ *
  */
 public abstract class AbstractStanfordCoreNLPWebService implements WebService {
 
-	protected static final Logger logger = LoggerFactory
-			.getLogger(AbstractStanfordCoreNLPWebService.class);
+    protected static final Logger log = LoggerFactory
+            .getLogger(AbstractStanfordCoreNLPWebService.class);
+
 
     static protected ConcurrentHashMap<String, StanfordCoreNLP> cache =
-            new ConcurrentHashMap<String, StanfordCoreNLP>();
+            new ConcurrentHashMap<>();
 
-	public static final String PROP_TOKENIZE = "tokenize";
-	public static final String PROP_SENTENCE_SPLIT = "ssplit";
-	public static final String PROP_POS_TAG = "pos";
-	public static final String PROP_LEMMA = "lemma";
-	public static final String PROP_NER = "ner";
-	public static final String PROP_PARSE = "parse";
-	public static final String PROP_CORERENCE = "dcoref";
+    public static final String PROP_TOKENIZE = "tokenize";
+    public static final String PROP_SENTENCE_SPLIT = "ssplit";
+    public static final String PROP_POS_TAG = "pos";
+    public static final String PROP_LEMMA = "lemma";
+    public static final String PROP_NER = "ner";
+    public static final String PROP_PARSE = "parse";
+    public static final String PROP_CORERENCE = "dcoref";
     public static final String PROP_KEY = "annotators";
+    public static final String VERSION = "version";
 
-	protected Properties props = new Properties();
-	StanfordCoreNLP snlp = null;
+    public static final String TOKEN_ID = "tk_";
+    public static final String SENT_ID = "s_";
+    public static final String CONSTITUENT_ID = "c_";
+    public static final String PS_ID = "ps_";
+    public static final String DEPENDENCY_ID = "dep_";
+    public static final String DS_ID = "ds_";
+    public static final String MENTION_ID = "m_";
+    public static final String COREF_ID = "coref_";
+    public static final String NE_ID = "ne_";
 
-	public AbstractStanfordCoreNLPWebService() {
-//		this.init("tokenize, ssplit, pos, lemma, ner, parse, dcoref");
-	}
 
+    protected Properties props = new Properties();
+    StanfordCoreNLP snlp = null;
+
+    private String metadata;
+
+    /**
+     * Default constructor only tries to load metadata.
+     */
+    public AbstractStanfordCoreNLPWebService() {
+        try {
+            loadMetadata();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Get version from metadata
+     */
+    String getVersion() {
+        return Version.getVersion();
+    }
 
     protected static void putFeature(Map mapFeature, String key, Object obj) {
         if (key != null && obj != null) {
@@ -59,93 +95,152 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
         }
     }
 
+    /**
+     * Initiate stanford NLP
+     * @param tools
+     */
     protected void init(String ... tools) {
         props.clear();
-
-        StringBuilder sb = new StringBuilder();
-        for(String tool: tools) {
-            sb.append(tool).append(" ");
+        String toolList;
+        if (tools.length > 1) {
+            StringBuilder sb = new StringBuilder();
+            for(String tool: tools) {
+                sb.append(tool).append(" ");
+            }
+            toolList = sb.toString();
+        } else {
+            toolList = tools[0];
         }
-        props.put(PROP_KEY, sb.toString().trim());
-        snlp = getCached(props);
+        props.put(PROP_KEY, toolList);
+        snlp = getProcessor(props);
     }
 
-	protected void init(String toolList) {
-		props.clear();
-		props.put(PROP_KEY, toolList);
-		snlp = getCached(props);
-	}
-
-
-    protected StanfordCoreNLP getCached (Properties props) {
+    protected StanfordCoreNLP getProcessor(Properties props) {
         String key = props.getProperty(PROP_KEY);
-        System.out.println("-----------------");
-        System.out.println(key);
+        log.info(String.format("Retriveing from cache: %s", key));
         StanfordCoreNLP val = cache.get(key);
         if (val == null) {
             val = new StanfordCoreNLP(props);
             cache.put(key, val);
+            log.info(String.format("No cached found, newly cached: %s", key));
         }
         return val;
     }
 
-
-
     @Override
-    public String execute(String s) {
-        LIFJsonSerialization json = null;
-        try{
-            s = s.trim();
-            if (s.startsWith("{") && s.endsWith("}")) {
-                json = new LIFJsonSerialization(s);
-                if (json.getDiscriminator().equals(Discriminators.Uri.ERROR)) {
-                    return json.toString();
-                }
-            } else {
-                json = new LIFJsonSerialization();
-                json.setText(s);
-            }
-            return execute(json);
-        }catch(Throwable th) {
-            json = new LIFJsonSerialization();
-            StringWriter sw = new StringWriter();
-            th.printStackTrace( new PrintWriter(sw));
-            json.setError(th.toString(), sw.toString());
-            System.err.println(sw.toString());
-            return json.toString();
+    /**
+     * This is default execute: takes a json, wrap it as a LIF, run modules
+     */
+    public String execute(String input) {
+        if (input == null)
+            return null;
+        input = input.trim();  // remove the whitespace.
+        // in case of Json
+        Data data =  null;
+        if(input.startsWith("{") && input.endsWith("}")) {
+            data = Serializer.parse(input, Data.class);
+        } else {
+            data = new Data();
+            data.setDiscriminator(Uri.TEXT);
+            data.setPayload(input);
+        }
+
+        final String discriminator = data.getDiscriminator();
+        Container cont;
+
+        switch (discriminator) {
+            case Uri.ERROR:
+                return input;
+            case Uri.JSON_LD:
+                cont = new Container((Map) data.getPayload());
+                break;
+            case Uri.LIF:
+                cont = new Container((Map) data.getPayload());
+                break;
+            case Uri.TEXT:
+                cont = new Container();
+                cont.setText((String) data.getPayload());
+                cont.setLanguage("en");
+                // return empty metadata for process result (for now)
+//                cont.setMetadata((Map) Serializer.parse(
+//                        this.getMetadata(), Data.class).getPayload());
+                break;
+            default:
+                String message = String.format
+                        ("Unsupported discriminator type: %s", discriminator);
+                return new Data<>(Uri.ERROR, message).asJson();
+        }
+
+        try {
+            // TODO 151022 this will be redundant when @context stuff sorted out
+            cont.setContext(Container.REMOTE_CONTEXT);
+            return execute(cont);
+        } catch (Throwable th) {
+            th.printStackTrace();
+            String message =
+                    String.format("Error processing input: %s", th.toString());
+            return new Data<>(Uri.ERROR, message).asJson();
         }
     }
 
+    /**
+     * This will be overridden for each module
+     */
+    public abstract String execute(Container json)
+            throws StanfordWebServiceException;
 
-    public abstract String execute(LIFJsonSerialization json) throws StanfordWebServiceException;
+    public void loadMetadata() throws IOException {
+        // get caller name using reflection
+        String serviceName = this.getClass().getName();
+        String resName = "/metadata/"+ serviceName +".json";
+        log.info("load resources:" + resName);
+        InputStream inputStream = this.getClass().getResourceAsStream(resName);
 
-
+        if (inputStream == null) {
+            String message = "Unable to load metadata file for " + this.getClass().getName();
+            log.error(message);
+            throw new IOException(message);
+        } else {
+            UTF8Reader reader = new UTF8Reader(inputStream);
+            try {
+                Scanner s = new Scanner(reader).useDelimiter("\\A");
+                String metadataText = s.hasNext() ? s.next() : "";
+                this.metadata = (new Data<>(Uri.META,
+                        Serializer.parse(metadataText, ServiceMetadata.class))).asPrettyJson();
+            } catch (Exception e) {
+                String message = "Unable to parse json for " + this.getClass().getName();
+                log.error(message, e);
+                this.metadata = (new Data<>(Uri.ERROR, message)).asPrettyJson();
+            }
+            reader.close();
+        }
+    }
 
     @Override
     public String getMetadata() {
-        // get caller name using reflection
-        String name = this.getClass().getName();
-        //
-        String resName = "/metadata/"+ name +".json";
-//        System.out.println("load resources:" + resName);
-        logger.info("load resources:" + resName);
-        try {
-            String meta = IOUtils.toString(this.getClass().getResourceAsStream(resName));
-            JsonObj json = new JsonObj();
-            json.put("discriminator", Discriminators.Uri.META);
-            json.put("payload", new JsonObj(meta));
-            return json.toString();
-        }catch (Throwable th) {
-            JsonObj json = new JsonObj();
-            json.put("discriminator", Discriminators.Uri.ERROR);
-            JsonObj error = new JsonObj();
-            error.put("class", name);
-            error.put("error", "NOT EXIST: "+resName);
-            error.put("message", th.getMessage());
-            StringWriter sw = new StringWriter();
-            th.printStackTrace(new PrintWriter(sw));
-            System.err.println(sw.toString());
-            return json.toString();
-        }
+        return this.metadata;
     }
+
+    /**
+     * Add a new annotation to a view
+     * TODO 151022 this will be deprecated when Serialization package updated
+     * TODO 151022 also, need to find usages of these from subclasses (actual services) when time comes
+     *
+     * @param view target view to add an annotation
+     * @return a new annotation with null type and null label
+     */
+    protected Annotation newAnnotation(
+            View view, String id, String atType, long start, long end) {
+        Annotation annotation = view.newAnnotation(id, atType, start, end);
+        annotation.setLabel(null);
+        annotation.setType(null);
+        return annotation;
+    }
+
+    protected Annotation newAnnotation(
+            View view, String id, String atType) {
+        return newAnnotation(view, id, atType, -1, -1);
+    }
+
 }
+

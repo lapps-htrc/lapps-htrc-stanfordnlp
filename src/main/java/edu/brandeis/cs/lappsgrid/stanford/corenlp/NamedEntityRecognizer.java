@@ -1,23 +1,24 @@
 package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
-import edu.brandeis.cs.lappsgrid.Version;
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 import edu.brandeis.cs.lappsgrid.stanford.corenlp.api.INamedEntityRecognizer;
-import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations.NamedEntityTagAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.CoreMap;
-import org.lappsgrid.discriminator.Discriminators;
-import org.lappsgrid.serialization.json.JsonObj;
-import org.lappsgrid.serialization.json.LIFJsonSerialization;
+import org.lappsgrid.serialization.Data;
+import org.lappsgrid.serialization.Serializer;
+import org.lappsgrid.serialization.lif.Annotation;
+import org.lappsgrid.serialization.lif.Container;
+import org.lappsgrid.serialization.lif.View;
 
 import java.util.List;
 
+import static org.lappsgrid.discriminator.Discriminators.Uri;
+
 /**
- * 
+ *
  * The Language Application Grid: A Framework for Rapid Adaptation and Reuse
  * <p>
  * Lapps Grid project TODO.
@@ -26,65 +27,81 @@ import java.util.List;
  *
  */
 public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService
-		implements INamedEntityRecognizer {
+        implements INamedEntityRecognizer {
 
 
-	public NamedEntityRecognizer() {
-		this.init(PROP_TOKENIZE, PROP_SENTENCE_SPLIT,
+    public NamedEntityRecognizer() {
+        this.init(PROP_TOKENIZE, PROP_SENTENCE_SPLIT,
                 PROP_POS_TAG, PROP_LEMMA, PROP_NER);
-	}
+    }
 
     @Override
-    public String execute(LIFJsonSerialization json) throws StanfordWebServiceException {
+    public String execute(Container container)
+            throws StanfordWebServiceException {
 
-        String txt = json.getText();
-        JsonObj view = json.newView();
-        json.newContains(view, Discriminators.Uri.NE,
-                "ner:stanford", this.getClass().getName() + ":" + Version.getVersion());
-        // NLP processing
-        Annotation annotation = new Annotation(txt);
+        String text = container.getText();
+        View view = container.newView();
+        view.addContains(Uri.NE,
+                String.format("%s:%s", this.getClass().getName(), getVersion()),
+                "ner:stanford");
+        int id = -1;
+        edu.stanford.nlp.pipeline.Annotation annotation
+                = new edu.stanford.nlp.pipeline.Annotation(text);
         snlp.annotate(annotation);
-        List<CoreMap> list = annotation.get(SentencesAnnotation.class);
-        for (CoreMap sent : list) {
+        List<CoreMap> sents = annotation.get(SentencesAnnotation.class);
+        for (CoreMap sent : sents) {
             for (CoreLabel token : sent.get(TokensAnnotation.class)) {
-                String  ner = token.ner();
+                String ner = token.ner();
                 if(ner != null && !ner.equalsIgnoreCase("O")) {
-                    JsonObj ann = json.newAnnotation(view, Discriminators.Uri.NE);
-                    json.setStart(ann, token.beginPosition());
-                    json.setEnd(ann, token.endPosition());
-                    json.setWord(ann, token.value());
-                    json.setLemma(ann, token.lemma());
-                    json.setCategory(ann, ner);
+                    String type = null;
+                    switch (ner.toLowerCase()) {
+                        case "person": type = Uri.PERSON;
+                            break;
+                        case "location": type = Uri.LOCATION;
+                            break;
+                        case "date": type = Uri.DATE;
+                            break;
+                        case "organization": type = Uri.ORGANIZATION;
+                            break;
+                    }
+                    if(type != null) {
+                        Annotation ann = newAnnotation(view, NE_ID + (++id), type,
+                                token.beginPosition(), token.endPosition());
+                        ann.addFeature("word", token.value());
+                    }
                 }
             }
         }
-        return json.toString();
+        // set discriminator to LIF
+        Data<Container> data = new Data<>(Uri.LIF, container);
+        return Serializer.toJson(data);
     }
 
-	@Override
-	public String find(String docs) {		
-		Annotation annotation = new Annotation(docs);
-		snlp.annotate(annotation);
-		
-		StringBuffer sb = new StringBuffer();
-		
-		List<CoreMap> sentences = annotation.get(SentencesAnnotation.class);
-		for (CoreMap sentence1 : sentences) {
-			for (CoreLabel token : sentence1.get(TokensAnnotation.class)) {
-				String ne = token.get(NamedEntityTagAnnotation.class);
-				if ( ne.equalsIgnoreCase("O") ){
-					sb.append(token.value());	
-				}
-				else {
-					sb.append("<").append(ne).append(">");
-					sb.append(token.value());
-					sb.append("</").append(ne).append(">");
-				}
-				sb.append(" ");
-			}
-		}
-		// return null;
-		return sb.substring(0, sb.length() - 1);
-	}
+    @Override
+    public String find(String docs) {
+        edu.stanford.nlp.pipeline.Annotation annotation
+                = new edu.stanford.nlp.pipeline.Annotation(docs);
+        snlp.annotate(annotation);
+
+        StringBuffer sb = new StringBuffer();
+
+        List<CoreMap> sentences = annotation.get(SentencesAnnotation.class);
+        for (CoreMap sentence1 : sentences) {
+            for (CoreLabel token : sentence1.get(TokensAnnotation.class)) {
+                String ne = token.get(NamedEntityTagAnnotation.class);
+                if ( ne.equalsIgnoreCase("O") ){
+                    sb.append(token.value());
+                }
+                else {
+                    sb.append("<").append(ne).append(">");
+                    sb.append(token.value());
+                    sb.append("</").append(ne).append(">");
+                }
+                sb.append(" ");
+            }
+        }
+        // return null;
+        return sb.substring(0, sb.length() - 1);
+    }
 
 }
