@@ -8,9 +8,7 @@ import org.lappsgrid.api.WebService;
 import org.lappsgrid.metadata.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
-import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
-import org.lappsgrid.serialization.lif.View;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +34,15 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
  * @author shicq@cs.brandeis.edu
  *
  */
+
+@org.lappsgrid.annotations.CommonMetadata(
+
+        requires_encoding = "UTF-8",
+        produces_encoding = "UTF-8",
+        vendor = "http://www.cs.brandeis.edu/",
+        license = "apache2",
+        language = { "en" }
+)
 public abstract class AbstractStanfordCoreNLPWebService implements WebService {
 
     protected static final Logger log = LoggerFactory
@@ -45,28 +52,27 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
     static protected ConcurrentHashMap<String, StanfordCoreNLP> cache =
             new ConcurrentHashMap<>();
 
-    public static final String PROP_TOKENIZE = "tokenize";
-    public static final String PROP_SENTENCE_SPLIT = "ssplit";
-    public static final String PROP_POS_TAG = "pos";
-    public static final String PROP_LEMMA = "lemma";
-    public static final String PROP_NER = "ner";
-    public static final String PROP_PARSE = "parse";
-    public static final String PROP_CORERENCE = "dcoref";
-    public static final String PROP_KEY = "annotators";
-    public static final String VERSION = "version";
+    static final String PROP_TOKENIZE = "tokenize";
+    static final String PROP_SENTENCE_SPLIT = "ssplit";
+    static final String PROP_POS_TAG = "pos";
+    static final String PROP_LEMMA = "lemma";
+    static final String PROP_NER = "ner";
+    static final String PROP_PARSE = "parse";
+    static final String PROP_CORERENCE = "dcoref";
+    static final String PROP_KEY = "annotators";
 
-    public static final String TOKEN_ID = "tk_";
-    public static final String SENT_ID = "s_";
-    public static final String CONSTITUENT_ID = "c_";
-    public static final String PS_ID = "ps_";
-    public static final String DEPENDENCY_ID = "dep_";
-    public static final String DS_ID = "ds_";
-    public static final String MENTION_ID = "m_";
-    public static final String COREF_ID = "coref_";
-    public static final String NE_ID = "ne_";
+    static final String TOKEN_ID = "tk_";
+    static final String SENT_ID = "s_";
+    static final String CONSTITUENT_ID = "c_";
+    static final String PS_ID = "ps_";
+    static final String DEPENDENCY_ID = "dep_";
+    static final String DS_ID = "ds_";
+    static final String MENTION_ID = "m_";
+    static final String COREF_ID = "coref_";
+    static final String NE_ID = "ne_";
 
 
-    protected Properties props = new Properties();
+    private Properties props = new Properties();
     StanfordCoreNLP snlp = null;
 
     private String metadata;
@@ -74,7 +80,7 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
     /**
      * Default constructor only tries to load metadata.
      */
-    public AbstractStanfordCoreNLPWebService() {
+    AbstractStanfordCoreNLPWebService() {
         try {
             loadMetadata();
         } catch(Exception e) {
@@ -89,17 +95,10 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
         return Version.getVersion();
     }
 
-    protected static void putFeature(Map mapFeature, String key, Object obj) {
-        if (key != null && obj != null) {
-            mapFeature.put(key, obj.toString());
-        }
-    }
-
     /**
      * Initiate stanford NLP
-     * @param tools
      */
-    protected void init(String ... tools) {
+    void init(String... tools) {
         props.clear();
         String toolList;
         if (tools.length > 1) {
@@ -115,7 +114,7 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
         snlp = getProcessor(props);
     }
 
-    protected StanfordCoreNLP getProcessor(Properties props) {
+    private StanfordCoreNLP getProcessor(Properties props) {
         String key = props.getProperty(PROP_KEY);
         log.info(String.format("Retriveing from cache: %s", key));
         StanfordCoreNLP val = cache.get(key);
@@ -127,19 +126,21 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
         return val;
     }
 
-    @Override
     /**
      * This is default execute: takes a json, wrap it as a LIF, run modules
      */
+    @Override
     public String execute(String input) {
         if (input == null)
             return null;
         input = input.trim();  // remove the whitespace.
         // in case of Json
-        Data data =  null;
-        if(input.startsWith("{") && input.endsWith("}")) {
+        Data data;
+
+        try {
             data = Serializer.parse(input, Data.class);
-        } else {
+            // Serializer#pase throws JsonParseException if input is not well-formed
+        } catch (Exception e) {
             data = new Data();
             data.setDiscriminator(Uri.TEXT);
             data.setPayload(input);
@@ -161,9 +162,6 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
                 cont = new Container();
                 cont.setText((String) data.getPayload());
                 cont.setLanguage("en");
-                // return empty metadata for process result (for now)
-//                cont.setMetadata((Map) Serializer.parse(
-//                        this.getMetadata(), Data.class).getPayload());
                 break;
             default:
                 String message = String.format
@@ -172,8 +170,6 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
         }
 
         try {
-            // TODO 151022 this will be redundant when @context stuff sorted out
-            cont.setContext(Container.REMOTE_CONTEXT);
             return execute(cont);
         } catch (Throwable th) {
             th.printStackTrace();
@@ -189,7 +185,7 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
     public abstract String execute(Container json)
             throws StanfordWebServiceException;
 
-    public void loadMetadata() throws IOException {
+    private void loadMetadata() throws IOException {
         // get caller name using reflection
         String serviceName = this.getClass().getName();
         String resName = "/metadata/"+ serviceName +".json";
@@ -219,27 +215,6 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
     @Override
     public String getMetadata() {
         return this.metadata;
-    }
-
-    /**
-     * Add a new annotation to a view
-     * TODO 151022 this will be deprecated when Serialization package updated
-     * TODO 151022 also, need to find usages of these from subclasses (actual services) when time comes
-     *
-     * @param view target view to add an annotation
-     * @return a new annotation with null type and null label
-     */
-    protected Annotation newAnnotation(
-            View view, String id, String atType, long start, long end) {
-        Annotation annotation = view.newAnnotation(id, atType, start, end);
-        annotation.setLabel(null);
-        annotation.setType(null);
-        return annotation;
-    }
-
-    protected Annotation newAnnotation(
-            View view, String id, String atType) {
-        return newAnnotation(view, id, atType, -1, -1);
     }
 
 }

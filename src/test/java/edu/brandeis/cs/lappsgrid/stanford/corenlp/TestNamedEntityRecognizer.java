@@ -3,6 +3,7 @@ package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 import junit.framework.Assert;
 import org.junit.Test;
+import org.lappsgrid.metadata.IOSpecification;
 import org.lappsgrid.metadata.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
@@ -11,7 +12,6 @@ import org.lappsgrid.serialization.lif.Container;
 import org.lappsgrid.serialization.lif.View;
 
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.*;
 import static org.lappsgrid.discriminator.Discriminators.Uri;
@@ -38,17 +38,24 @@ public class TestNamedEntityRecognizer extends TestService {
     }
 
     @Test
-    public void testMetadata() {
-        Data data = Serializer.parse(service.getMetadata(), Data.class);
-        ServiceMetadata metadata = new ServiceMetadata((Map) data.getPayload());
-        assertEquals("Name is not correct",
-                NamedEntityRecognizer.class.getName(), metadata.getName());
+    public void testMetadata(){
+        ServiceMetadata metadata = super.testCommonMetadata();
+        IOSpecification requires = metadata.getRequires();
+        IOSpecification produces = metadata.getProduces();
+        assertEquals("Expected 4 annotations, found: " + produces.getAnnotations().size(),
+                4, produces.getAnnotations().size());
+        assertTrue("Date not produced",
+                produces.getAnnotations().contains(Uri.DATE));
+        assertTrue("Person not produced",
+                produces.getAnnotations().contains(Uri.PERSON));
+        assertTrue("Organization not produced",
+                produces.getAnnotations().contains(Uri.ORGANIZATION));
+        assertTrue("Location not produced",
+                produces.getAnnotations().contains(Uri.LOCATION));
     }
 
     @Test
     public void testExecute() {
-
-
 
         String result0 = service.execute(testSent);
         String input = new Data<>(Uri.LIF, wrapContainer(testSent)).asJson();

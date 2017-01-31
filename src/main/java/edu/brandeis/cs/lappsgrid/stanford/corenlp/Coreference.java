@@ -15,13 +15,20 @@ import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
 import org.lappsgrid.serialization.lif.View;
-import org.lappsgrid.vocabulary.Features;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.lappsgrid.vocabulary.Features.Token;
+
+@org.lappsgrid.annotations.ServiceMetadata(
+        description = "Stanford CoreNLP 3.3.1 Coreference",
+        requires_format = { "text", "lif" },
+        produces_format = { "lif" },
+        produces = { "coref", "token", "markable" }
+)
 public class Coreference extends AbstractStanfordCoreNLPWebService implements
         ICoreference {
 
@@ -64,10 +71,10 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
             for (CoreLabel token : sent.get(TokensAnnotation.class)) {
                 String tokenId = String.format("%s%d_%d", TOKEN_ID, sid, tid++);
                 tokenIndex.put(token.word(), tokenId);
-                Annotation ann = newAnnotation(view, tokenId,
+                Annotation ann = view.newAnnotation(tokenId,
                         Uri.TOKEN, token.beginPosition(), token.endPosition());
                 ann.addFeature("word", token.value());
-                ann.addFeature(Features.Token.POS,  token.tag());
+                ann.addFeature(Token.POS,  token.tag());
             }
             sid++;
         }
@@ -85,7 +92,7 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
                 List<CoreLabel> tokens = sent.get(TokensAnnotation.class);
                 int mBegin = tokens.get(mention.startIndex - 1).beginPosition();
                 int mEnd = tokens.get(mention.endIndex - 2).endPosition();
-                Annotation mentionAnn = newAnnotation(view,
+                Annotation mentionAnn = view.newAnnotation(
                         MENTION_ID + mention.mentionID, Uri.MARKABLE, mBegin, mEnd);
                 mentionAnn.addFeature("words", text.substring(mBegin, mEnd));
                 mentionAnn.addFeature("sentenceIndex", Integer.toString(mention.sentNum - 1));
@@ -100,7 +107,7 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
 
             // TODO 151017 current corefId will be the same as mentionID of representative,
             // should we use incremental ID starting from 0 (or 1) ?
-            Annotation chain = newAnnotation(view, COREF_ID + corefId, Uri.COREF);
+            Annotation chain = view.newAnnotation(COREF_ID + corefId, Uri.COREF);
             chain.addFeature("representative",
                     "m_" + coref.getRepresentativeMention().mentionID);
             chain.getFeatures().put("mentions", mentionIds);

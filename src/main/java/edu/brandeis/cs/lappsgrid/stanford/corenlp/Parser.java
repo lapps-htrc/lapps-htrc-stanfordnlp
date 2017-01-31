@@ -16,14 +16,21 @@ import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
 import org.lappsgrid.serialization.lif.View;
-import org.lappsgrid.vocabulary.Features;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
 
 import static org.lappsgrid.discriminator.Discriminators.Uri;
+import static org.lappsgrid.vocabulary.Features.PhraseStructure;
+import static org.lappsgrid.vocabulary.Features.Token;
 
+@org.lappsgrid.annotations.ServiceMetadata(
+        description = "Stanford CoreNLP 3.3.1 Phrase Structure Parser",
+        requires_format = { "text", "lif" },
+        produces_format = { "lif" },
+        produces = { "constituent", "token", "phrase-structure" }
+)
 public class Parser extends AbstractStanfordCoreNLPWebService implements
         IParser {
 
@@ -62,9 +69,9 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
             for (CoreLabel token : sent.get(TokensAnnotation.class)) {
                 String tokenId = String.format("%s%d_%d", TOKEN_ID, sid, tid++);
                 tokenIndex.put(token.word(), tokenId);
-                Annotation ann = newAnnotation(view, tokenId,
+                Annotation ann = view.newAnnotation(tokenId,
                         Uri.TOKEN, token.beginPosition(), token.endPosition());
-                ann.addFeature(Features.Token.POS, token.get(CoreAnnotations.PartOfSpeechAnnotation.class));
+                ann.addFeature(Token.POS, token.get(CoreAnnotations.PartOfSpeechAnnotation.class));
                 ann.addFeature("word", token.value());
             }
 
@@ -72,7 +79,7 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
             // constituents indexed left-right breadth-first
             // leaves are indexed by stanford (off by 1 from tokenIDs from above)
             int cid = 0;
-            Annotation ps = newAnnotation(view, PS_ID + sid, Uri.PHRASE_STRUCTURE,
+            Annotation ps = view.newAnnotation(PS_ID + sid, Uri.PHRASE_STRUCTURE,
                     sent.get(CharacterOffsetBeginAnnotation.class),
                     sent.get(CharacterOffsetEndAnnotation.class));
             Tree root = sent.get(TreeAnnotation.class);
@@ -88,8 +95,7 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
                             "%s%d_%d", CONSTITUENT_ID, sid, cid++);
                     allConstituents.add(curID);
                     String curLabel = cur.label().value();
-                    Annotation constituent
-                            = newAnnotation(view, curID, Uri.CONSTITUENT);
+                    Annotation constituent = view.newAnnotation(curID, Uri.CONSTITUENT);
                     constituent.setLabel(curLabel);
                     ArrayList<String> childrenIDs = new ArrayList<>();
 
@@ -106,12 +112,10 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
                 }
             }
             sid++;
-            // ps.addFeature(Features.PhraseStructure.CONSTITUENTS,
-            //        allConstituents.toString());
             ps.getFeatures().put("sentence", sent.toString());
             ps.getFeatures().put("penntree", root.pennString());
-            ps.getFeatures().put(Features.PhraseStructure.CONSTITUENTS,
-                            allConstituents);
+            ps.getFeatures().put(PhraseStructure.CONSTITUENTS,
+                    allConstituents);
         }
 
         Data<Container> data = new Data<>(Uri.LIF, container);

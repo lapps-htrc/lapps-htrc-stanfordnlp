@@ -1,17 +1,18 @@
 {
   "$schema" : "http://vocab.lappsgrid.org/schema/service-schema-1.0.0.json",
   "name" : "edu.brandeis.cs.lappsgrid.stanford.corenlp.Splitter",
-  "version" : "2.0.0",
-  "description" : "Stanford CoreNLP Splitter",
+  "version" : "2.0.2",
+  "description" : "Stanford CoreNLP 3.3.1 Sentence Splitter",
   "vendor" : "http://www.cs.brandeis.edu/",
   "allow" : "http://vocab.lappsgrid.org/ns/allow#any",
   "license" : "http://vocab.lappsgrid.org/ns/license#apache-2.0",
   "requires" : {
+    "encoding" : "UTF-8",
     "language" : [ "en" ],
-    "format" : [ "http://vocab.lappsgrid.org/ns/media/jsonld#lif" ],
-    "annotations" : [ "http://vocab.lappsgrid.org/Sentence" ]
+    "format" : [ "http://vocab.lappsgrid.org/ns/media/text", "http://vocab.lappsgrid.org/ns/media/jsonld#lif" ]
   },
   "produces" : {
+    "encoding" : "UTF-8",
     "language" : [ "en" ],
     "format" : [ "http://vocab.lappsgrid.org/ns/media/jsonld#lif" ],
     "annotations" : [ "http://vocab.lappsgrid.org/Sentence" ]

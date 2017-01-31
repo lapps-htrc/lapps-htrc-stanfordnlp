@@ -24,6 +24,12 @@ import java.util.List;
 
 import static org.lappsgrid.discriminator.Discriminators.Uri;
 
+@org.lappsgrid.annotations.ServiceMetadata(
+        description = "Stanford CoreNLP 3.3.1 Dependency Parser",
+        requires_format = { "text", "lif" },
+        produces_format = { "lif" },
+        produces = { "dependency", "dependency-structure", "token" }
+)
 public class DependencyParser extends AbstractStanfordCoreNLPWebService implements
         IParser {
 
@@ -35,8 +41,7 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService implemen
     public String execute(Container container) throws StanfordWebServiceException {
         String text = container.getText();
         View view = container.newView();
-        // TODO 151021 fix Uri when Keith fix typo
-        view.addContains(Uri.DENDENCY_STRUCTURE,
+        view.addContains(Uri.DEPENDENCY_STRUCTURE,
                 String.format("%s:%s", this.getClass().getName(), getVersion()),
                 "dependency-parser:stanford");
         view.addContains(Uri.DEPENDENCY ,
@@ -53,8 +58,8 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService implemen
         for (CoreMap sent : list) {
             int start = sent.get(CharacterOffsetBeginAnnotation.class);
             int end = sent.get(CharacterOffsetEndAnnotation.class);
-            Annotation ann = newAnnotation(view, DS_ID + cntSent,
-                    Uri.DENDENCY_STRUCTURE, start, end);
+            Annotation ann = view.newAnnotation(DS_ID + cntSent,
+                    Uri.DEPENDENCY_STRUCTURE, start, end);
 
             ann.addFeature("sentence", sent.toString());
             SemanticGraph graph = sent.get(BasicDependenciesAnnotation.class);
@@ -65,8 +70,7 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService implemen
                         DEPENDENCY_ID, cntSent, cntEdge++);
                 dependencies.add(id);
 
-                Annotation dependency = newAnnotation(view, id,
-                        Uri.DEPENDENCY);
+                Annotation dependency = view.newAnnotation(id, Uri.DEPENDENCY);
                 dependency.setLabel(edge.getRelation().toString());
                 // stanford indexing starts from 1, for consistency, we start from 0
                 dependency.addFeature("governor",
@@ -82,8 +86,7 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService implemen
 
             int cntToken = 0;
             for (CoreLabel token : sent.get(TokensAnnotation.class)) {
-                ann = newAnnotation(view,
-                        makeTokenId(cntSent, cntToken++),
+                ann = view.newAnnotation(makeTokenId(cntSent, cntToken++),
                         Uri.TOKEN, token.beginPosition(), token.endPosition());
                 ann.addFeature("pos", token.tag());
                 ann.addFeature("word", token.value());

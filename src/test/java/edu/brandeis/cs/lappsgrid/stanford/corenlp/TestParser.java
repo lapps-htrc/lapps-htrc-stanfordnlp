@@ -3,6 +3,8 @@ package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 import junit.framework.Assert;
 import org.junit.Test;
+import org.lappsgrid.metadata.IOSpecification;
+import org.lappsgrid.metadata.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Container;
@@ -33,6 +35,21 @@ public class TestParser extends TestService {
     }
 
     @Test
+    public void testMetadata(){
+        ServiceMetadata metadata = super.testCommonMetadata();
+        IOSpecification requires = metadata.getRequires();
+        IOSpecification produces = metadata.getProduces();
+        assertEquals("Expected 3 annotations, found: " + produces.getAnnotations().size(),
+                3, produces.getAnnotations().size());
+        assertTrue("Tokens not produced",
+                produces.getAnnotations().contains(Uri.TOKEN));
+        assertTrue("Constituents not produced",
+                produces.getAnnotations().contains(Uri.CONSTITUENT));
+        assertTrue("Phrase structures not produced",
+                produces.getAnnotations().contains(Uri.PHRASE_STRUCTURE));
+    }
+
+    @Test
     public void testExecute(){
         String input = new Data<>(Uri.LIF, wrapContainer(testSent)).asJson();
         String result = service.execute(input);
@@ -52,8 +69,6 @@ public class TestParser extends TestService {
     @Test
     public void testExecuteText(){
 
-
-
         String result0 = service.execute(testSent);
         String input = new Data<>(Uri.LIF, wrapContainer(testSent)).asJson();
         String result = service.execute(input);
@@ -64,9 +79,6 @@ public class TestParser extends TestService {
         System.out.println(result);
         System.out.println("------------------------------------------------------------------------------>");
 
-
-
-//        String input = new Data<>(Uri.LIF, wrapContainer(testSent)).asJson();
         String lifResult = Serializer.toJson(
                 reconstructPayload(service.execute(input)));
         input = new Data<>(Uri.TEXT, testSent).asPrettyJson();
@@ -74,5 +86,4 @@ public class TestParser extends TestService {
                 reconstructPayload(service.execute(input)));
         assertEquals("Results are not matching", lifResult, textResult);
     }
-
 }
