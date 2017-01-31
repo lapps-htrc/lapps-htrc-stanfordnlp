@@ -11,7 +11,6 @@ import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
 import org.lappsgrid.serialization.lif.View;
-import org.lappsgrid.vocabulary.Features;
 
 import java.util.ArrayList;
 import java.util.List;

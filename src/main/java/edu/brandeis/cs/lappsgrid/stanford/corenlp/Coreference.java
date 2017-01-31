@@ -15,12 +15,13 @@ import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
 import org.lappsgrid.serialization.lif.View;
-import org.lappsgrid.vocabulary.Features;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.lappsgrid.vocabulary.Features.Token;
 
 @org.lappsgrid.annotations.ServiceMetadata(
         description = "Stanford CoreNLP 3.3.1 Coreference",
@@ -73,7 +74,7 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
                 Annotation ann = view.newAnnotation(tokenId,
                         Uri.TOKEN, token.beginPosition(), token.endPosition());
                 ann.addFeature("word", token.value());
-                ann.addFeature(Features.Token.POS,  token.tag());
+                ann.addFeature(Token.POS,  token.tag());
             }
             sid++;
         }

@@ -16,13 +16,14 @@ import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
 import org.lappsgrid.serialization.lif.View;
-import org.lappsgrid.vocabulary.Features;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
 
 import static org.lappsgrid.discriminator.Discriminators.Uri;
+import static org.lappsgrid.vocabulary.Features.PhraseStructure;
+import static org.lappsgrid.vocabulary.Features.Token;
 
 @org.lappsgrid.annotations.ServiceMetadata(
         description = "Stanford CoreNLP 3.3.1 Phrase Structure Parser",
@@ -70,7 +71,7 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
                 tokenIndex.put(token.word(), tokenId);
                 Annotation ann = view.newAnnotation(tokenId,
                         Uri.TOKEN, token.beginPosition(), token.endPosition());
-                ann.addFeature(Features.Token.POS, token.get(CoreAnnotations.PartOfSpeechAnnotation.class));
+                ann.addFeature(Token.POS, token.get(CoreAnnotations.PartOfSpeechAnnotation.class));
                 ann.addFeature("word", token.value());
             }
 
@@ -111,11 +112,9 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
                 }
             }
             sid++;
-            // ps.addFeature(Features.PhraseStructure.CONSTITUENTS,
-            //        allConstituents.toString());
             ps.getFeatures().put("sentence", sent.toString());
             ps.getFeatures().put("penntree", root.pennString());
-            ps.getFeatures().put(Features.PhraseStructure.CONSTITUENTS,
+            ps.getFeatures().put(PhraseStructure.CONSTITUENTS,
                     allConstituents);
         }
 

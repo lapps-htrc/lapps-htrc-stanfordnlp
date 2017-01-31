@@ -12,12 +12,12 @@ import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
 import org.lappsgrid.serialization.lif.View;
-import org.lappsgrid.vocabulary.Features;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.lappsgrid.discriminator.Discriminators.Uri;
+import static org.lappsgrid.vocabulary.Features.Token;
 
 @org.lappsgrid.annotations.ServiceMetadata(
         description = "Stanford CoreNLP 3.3.1 Parts-of-speech Tagger",
@@ -53,8 +53,8 @@ public class POSTagger extends AbstractStanfordCoreNLPWebService implements
                 Annotation a = view.newAnnotation(
                         String.format("%s%d_%d", TOKEN_ID, sid++, tid++), Uri.POS,
                         token.beginPosition(), token.endPosition());
-                a.addFeature(Features.Token.POS, token.get(PartOfSpeechAnnotation.class));
-                a.addFeature(Features.Token.WORD, token.value());
+                a.addFeature(Token.POS, token.get(PartOfSpeechAnnotation.class));
+                a.addFeature(Token.WORD, token.value());
             }
         }
 
