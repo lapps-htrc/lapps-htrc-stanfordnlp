@@ -1,7 +1,7 @@
 {
   "$schema" : "http://vocab.lappsgrid.org/schema/service-schema-1.0.0.json",
   "name" : "edu.brandeis.cs.lappsgrid.stanford.corenlp.Coreference",
-  "version" : "2.0.2-SNAPSHOT",
+  "version" : "2.0.3-SNAPSHOT",
   "description" : "Stanford CoreNLP 3.3.1 Coreference",
   "vendor" : "http://www.cs.brandeis.edu/",
   "allow" : "http://vocab.lappsgrid.org/ns/allow#any",
