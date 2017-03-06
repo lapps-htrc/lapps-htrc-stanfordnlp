@@ -16,6 +16,7 @@ import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
 import org.lappsgrid.serialization.lif.View;
+import org.lappsgrid.vocabulary.Features;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -63,6 +64,8 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
         int sid = 0;
         for (CoreMap sent : sents) {
 
+            Map<String, String> childToParent = new HashMap<>();
+
             // first, populate tokens
             Map<String, String> tokenIndex = new HashMap<>();
             int tid = 0;
@@ -101,14 +104,18 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
 
                     for (Tree child : cur.getChildrenAsList()) {
                         queue.add(child);
+                        String childID;
                         if (child.numChildren() > 0) {
-                            childrenIDs.add("c_" + nextNonTerminal++);
+                            childID = String.format("%s%d_%d", CONSTITUENT_ID, sid, nextNonTerminal++);
                         } else {
-                            childrenIDs.add(String.format("tk_%d_%d", sid,
-                                    ((CoreLabel) child.label()).index() - 1));
+                            childID = String.format("%s%d_%d", TOKEN_ID, sid,
+                                    ((CoreLabel) child.label()).index() - 1);
                         }
+                        childToParent.put(childID, curID);
+                        childrenIDs.add(childID);
                     }
-                    constituent.getFeatures().put("children", childrenIDs);
+                    constituent.getFeatures().put(Features.Constituent.CHILDREN, childrenIDs);
+                    constituent.getFeatures().put(Features.Constituent.PARENT, childToParent.get(curID));
                 }
             }
             sid++;
