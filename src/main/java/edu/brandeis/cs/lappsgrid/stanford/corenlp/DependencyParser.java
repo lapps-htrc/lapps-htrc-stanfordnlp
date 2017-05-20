@@ -18,6 +18,7 @@ import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
 import org.lappsgrid.serialization.lif.View;
+import org.lappsgrid.vocabulary.Features;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,6 +66,17 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService implemen
             SemanticGraph graph = sent.get(BasicDependenciesAnnotation.class);
             int cntEdge = 0;
             List<String> dependencies = new ArrayList<>();
+            for (IndexedWord root : graph.getRoots()) {
+                String id = String.format("%s%d_%d", DEPENDENCY_ID, cntSent, cntEdge++);
+                dependencies.add(id);
+                Annotation dependency = view.newAnnotation(id, Uri.DEPENDENCY);
+                dependency.setLabel("ROOT");
+                dependency.addFeature(Features.Dependency.GOVERNOR,
+                        "null");
+                dependency.addFeature(Features.Dependency.DEPENDENT,
+                        makeTokenId(cntSent, root.index() - 1));
+                dependency.addFeature("dependent_word", root.word());
+            }
             for(SemanticGraphEdge edge:graph.getEdgeSet()) {
                 String id = String.format("%s%d_%d",
                         DEPENDENCY_ID, cntSent, cntEdge++);
@@ -73,10 +85,10 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService implemen
                 Annotation dependency = view.newAnnotation(id, Uri.DEPENDENCY);
                 dependency.setLabel(edge.getRelation().toString());
                 // stanford indexing starts from 1, for consistency, we start from 0
-                dependency.addFeature("governor",
+                dependency.addFeature(Features.Dependency.GOVERNOR,
                         makeTokenId(cntSent, edge.getGovernor().index() - 1));
                 dependency.addFeature("governor_word", edge.getGovernor().word());
-                dependency.addFeature("dependent",
+                dependency.addFeature(Features.Dependency.DEPENDENT,
                         makeTokenId(cntSent, edge.getDependent().index() - 1));
                 dependency.addFeature("dependent_word", edge.getDependent().word());
 
