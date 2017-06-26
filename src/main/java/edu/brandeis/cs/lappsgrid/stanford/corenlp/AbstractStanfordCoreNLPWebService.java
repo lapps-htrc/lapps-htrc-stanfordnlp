@@ -1,6 +1,5 @@
 package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
-import edu.brandeis.cs.lappsgrid.Version;
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import org.apache.xerces.impl.io.UTF8Reader;
@@ -92,7 +91,21 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
      * Get version from metadata
      */
     String getVersion() {
-        return Version.getVersion();
+        String path = "/version.properties";
+        InputStream stream = getClass().getResourceAsStream(path);
+        if (stream == null) {
+            log.error("version.properties file not found, version is UNKNOWN.");
+            return "UNKNOWN";
+        }
+        Properties properties = new Properties();
+        try {
+            properties.load(stream);
+            stream.close();
+            return (String) properties.get("version");
+        } catch (IOException e) {
+            log.error("error loading version.properties, version is UNKNOWN.");
+            return "UNKNOWN";
+        }
     }
 
     /**

@@ -3,80 +3,29 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>edu.brandeis.cs.lapps</groupId>
     <artifactId>stanfordnlp-web-service</artifactId>
-    <version>2.0.4-SNAPSHOT</version>
     <version>2.0.5-SNAPSHOT</version>
     <packaging>war</packaging>
-    <name>Brandeis Web Services wrapping Stanford CoreNLP tools for Lappsgrid</name>
+    <name>Brandeis LAPPS Web Services wrapping Stanford CoreNLP tools</name>
     <description>
         Publish API for the LAPPS exchange data structure (LEDS), the thing that will be serialized to from JSON-LD.
         Provide converter for the Standford one-per-line format to LEDS.
     </description>
     <parent>
-        <artifactId>war-parent-pom</artifactId>
         <groupId>org.lappsgrid.maven</groupId>
-        <version>2.0.4</version>
+        <artifactId>war-parent-pom</artifactId>
+        <version>2.0.5</version>
     </parent>
 
 
-    <!--http://www.anc.org:8080/Versions/-->
     <properties>
         <lapps.all>2.3.3</lapps.all>
         <stanford.version>3.3.1</stanford.version>
     </properties>
 
-    <repositories> <!-- internal repository -->
-        <repository>
-            <id>the Maven central repository</id>
-            <url>http://repo.maven.apache.org/maven2/</url>
-        </repository>
-        <repository>
-            <id>anc-releases</id>
-            <url>http://www.anc.org:8080/nexus/content/repositories/releases/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>anc-snapshots</id>
-            <url>http://www.anc.org:8080/nexus/content/repositories/snapshots/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-            </snapshots>
-        </repository>
-    </repositories>
-
     <pluginRepositories>
         <pluginRepository>
             <id>the Maven central repository</id>
             <url>http://repo.maven.apache.org/maven2/</url>
-        </pluginRepository>
-        <pluginRepository>
-            <id>anc-releases</id>
-            <url>http://www.anc.org:8080/nexus/content/repositories/releases/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </pluginRepository>
-        <pluginRepository>
-            <id>anc-snapshots</id>
-            <url>http://www.anc.org:8080/nexus/content/repositories/snapshots/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-            </snapshots>
         </pluginRepository>
     </pluginRepositories>
 
@@ -86,14 +35,6 @@
             <artifactId>all</artifactId>
             <version>${lapps.all}</version>
         </dependency>
-
-        <dependency>
-            <groupId>org.lappsgrid</groupId>
-            <artifactId>service-grid-libs</artifactId>
-            <version>1.1.0</version>
-        </dependency>
-
-
         <dependency>
             <groupId>edu.stanford.nlp</groupId>
             <artifactId>stanford-corenlp</artifactId>
@@ -110,46 +51,13 @@
             <artifactId>stanford-parser</artifactId>
             <version>${stanford.version}</version>
         </dependency>
-
-
-        <dependency>
-            <groupId>com.sun.faces</groupId>
-            <artifactId>jsf-api</artifactId>
-            <version>2.1.7</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>jstl</artifactId>
-            <version>1.2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.faces</groupId>
-            <artifactId>jsf-impl</artifactId>
-            <version>2.1.7</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.5</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.4.4</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>1.4</version>
-        </dependency>
     </dependencies>
 
     <build>
-        <finalName>stanfordnlp-web-service#${project.version}</finalName>
-        <plugins>
 
+        <finalName>stanfordnlp-web-service#${project.version}</finalName>
+
+        <plugins>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
@@ -162,12 +70,6 @@
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
                 </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.4</version>
             </plugin>
 
             <plugin>
@@ -186,33 +88,33 @@
 
 
             <plugin>
+                <!-- Hit out-of-memory during test with the default options -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.16</version>
                 <configuration>
                     <argLine>-Xms512m -Xmx2496m -XX:MaxPermSize=128m</argLine>
-                    <!-- mvn test: java.lang.OutOfMemoryError: Java heap space -->
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.anc.maven.plugins</groupId>
-                <artifactId>anc-maven-plugin</artifactId>
-                <version>1.0.4</version>
-                <executions>
-                    <execution>
-                        <id>version-class</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>version-class</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <package>edu.brandeis.cs.lappsgrid</package>
                 </configuration>
             </plugin>
         </plugins>
+
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>version.properties</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <includes>
+                    <include>**</include>
+                </includes>
+            </resource>
+        </resources>
+
     </build>
 
 </project>
