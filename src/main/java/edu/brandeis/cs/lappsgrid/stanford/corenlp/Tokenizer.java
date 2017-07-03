@@ -1,7 +1,6 @@
 package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
-import edu.brandeis.cs.lappsgrid.stanford.corenlp.api.ITokenizer;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -12,19 +11,24 @@ import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
 import org.lappsgrid.serialization.lif.View;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.lappsgrid.discriminator.Discriminators.Uri;
 
+/**
+ *
+ * @author Chunqi SHI (shicq@cs.brandeis.edu)
+ * @author Keigh Rim (krim@brandeis.edu)
+ * @since 2014-03-25
+ *
+ */
 @org.lappsgrid.annotations.ServiceMetadata(
         description = "Stanford CoreNLP 3.3.1 Tokenizer",
         requires_format = { "text", "lif" },
         produces_format = { "lif" },
         produces = { "token" }
 )
-public class Tokenizer extends AbstractStanfordCoreNLPWebService implements
-        ITokenizer {
+public class Tokenizer extends AbstractStanfordCoreNLPWebService {
 
     public Tokenizer() {
         this.init(PROP_TOKENIZE, PROP_SENTENCE_SPLIT);
@@ -59,25 +63,6 @@ public class Tokenizer extends AbstractStanfordCoreNLPWebService implements
         // set discriminator to LIF
         Data<Container> data = new Data<>(Uri.LIF, container);
         return Serializer.toJson(data);
-    }
-
-    @Override
-    public String[] tokenize(String text) {
-        edu.stanford.nlp.pipeline.Annotation annotation
-                = new edu.stanford.nlp.pipeline.Annotation(text);
-        snlp.annotate(annotation);
-
-        ArrayList<String> list = new ArrayList<String> ();
-
-        List<CoreMap> sentences = annotation.get(SentencesAnnotation.class);
-        for (CoreMap sentence1 : sentences) {
-            for (CoreLabel token : sentence1.get(TokensAnnotation.class)) {
-                // krim 150903: keeping only .value() is useless as it loses all offset info
-                list.add(token.value());
-            }
-        }
-        // return null;
-        return list.toArray(new String[list.size()]);
     }
 
 }

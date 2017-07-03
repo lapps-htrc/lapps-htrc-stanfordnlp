@@ -1,7 +1,6 @@
 package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
-import edu.brandeis.cs.lappsgrid.stanford.corenlp.api.IParser;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetEndAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
@@ -11,7 +10,6 @@ import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.BasicDependenciesAnnotation;
 import edu.stanford.nlp.semgraph.SemanticGraphEdge;
-import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.util.CoreMap;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
@@ -25,14 +23,20 @@ import java.util.List;
 
 import static org.lappsgrid.discriminator.Discriminators.Uri;
 
+/**
+ *
+ * @author Chunqi SHI (shicq@cs.brandeis.edu)
+ * @author Keigh Rim (krim@brandeis.edu)
+ * @since 2015-05-15
+ *
+ */
 @org.lappsgrid.annotations.ServiceMetadata(
         description = "Stanford CoreNLP 3.3.1 Dependency Parser",
         requires_format = { "text", "lif" },
         produces_format = { "lif" },
         produces = { "dependency", "dependency-structure", "token" }
 )
-public class DependencyParser extends AbstractStanfordCoreNLPWebService implements
-        IParser {
+public class DependencyParser extends AbstractStanfordCoreNLPWebService {
 
     public DependencyParser() {
         this.init(PROP_TOKENIZE, PROP_SENTENCE_SPLIT, PROP_PARSE);
@@ -112,32 +116,6 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService implemen
 
     private String makeTokenId(int sid, int tid) {
         return String.format("%s%d_%d", TOKEN_ID, sid, tid);
-    }
-
-    @Override
-    public String parse(String docs) {
-        edu.stanford.nlp.pipeline.Annotation annotation
-                = new edu.stanford.nlp.pipeline.Annotation(docs);
-        snlp.annotate(annotation);
-
-        StringBuilder sb = new StringBuilder();
-        List<CoreMap> sentences = annotation.get(SentencesAnnotation.class);
-        for (CoreMap sentence : sentences) {
-            SemanticGraph graph = sentence.get(BasicDependenciesAnnotation.class);
-            for(SemanticGraphEdge edge : graph.getEdgeSet())
-            {
-                IndexedWord dep = edge.getDependent();
-                IndexedWord gov = edge.getGovernor();
-                GrammaticalRelation relation = edge.getRelation();
-                String disc = relation.toString()
-                        + "("+gov.word()+"-"+gov.index()+","
-                        +dep.word()+"-"+dep.index()+")";
-//                System.out.println(disc);
-                sb.append(disc+"\n");
-            }
-        }
-        // return null;
-        return sb.toString();
     }
 
 }

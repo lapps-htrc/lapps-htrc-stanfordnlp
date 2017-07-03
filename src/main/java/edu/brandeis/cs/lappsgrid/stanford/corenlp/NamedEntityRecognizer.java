@@ -1,8 +1,6 @@
 package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
-import edu.brandeis.cs.lappsgrid.stanford.corenlp.api.INamedEntityRecognizer;
-import edu.stanford.nlp.ling.CoreAnnotations.NamedEntityTagAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -19,22 +17,18 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
 
 /**
  *
- * The Language Application Grid: A Framework for Rapid Adaptation and Reuse
- * <p>
- * Lapps Grid project TODO.
- * <p>
- * @author Chunqi SHI (shicq@cs.brandeis.edu) <br> Jan 31, 2014 </br>
+ * @author Chunqi SHI (shicq@cs.brandeis.edu)
+ * @author Keigh Rim (krim@brandeis.edu)
+ * @since 2014-01-31
  *
  */
-
 @org.lappsgrid.annotations.ServiceMetadata(
         name = "edu.brandeis.cs.lappsgrid.stanford.corenlp.NamedEntityRecognizer",
         requires_format = { "text", "lif" },
         produces_format = { "lif" },
         produces = { "person", "location", "date", "organization" }
 )
-public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService
-        implements INamedEntityRecognizer {
+public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService {
 
 
     public NamedEntityRecognizer() {
@@ -82,33 +76,6 @@ public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService
         // set discriminator to LIF
         Data<Container> data = new Data<>(Uri.LIF, container);
         return Serializer.toJson(data);
-    }
-
-    @Override
-    public String find(String docs) {
-        edu.stanford.nlp.pipeline.Annotation annotation
-                = new edu.stanford.nlp.pipeline.Annotation(docs);
-        snlp.annotate(annotation);
-
-        StringBuffer sb = new StringBuffer();
-
-        List<CoreMap> sentences = annotation.get(SentencesAnnotation.class);
-        for (CoreMap sentence1 : sentences) {
-            for (CoreLabel token : sentence1.get(TokensAnnotation.class)) {
-                String ne = token.get(NamedEntityTagAnnotation.class);
-                if ( ne.equalsIgnoreCase("O") ){
-                    sb.append(token.value());
-                }
-                else {
-                    sb.append("<").append(ne).append(">");
-                    sb.append(token.value());
-                    sb.append("</").append(ne).append(">");
-                }
-                sb.append(" ");
-            }
-        }
-        // return null;
-        return sb.substring(0, sb.length() - 1);
     }
 
 }

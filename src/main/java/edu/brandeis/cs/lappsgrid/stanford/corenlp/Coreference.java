@@ -1,7 +1,6 @@
 package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
-import edu.brandeis.cs.lappsgrid.stanford.corenlp.api.ICoreference;
 import edu.stanford.nlp.dcoref.CorefChain;
 import edu.stanford.nlp.dcoref.CorefChain.CorefMention;
 import edu.stanford.nlp.dcoref.CorefCoreAnnotations.CorefChainAnnotation;
@@ -15,6 +14,7 @@ import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
 import org.lappsgrid.serialization.lif.View;
+import org.lappsgrid.vocabulary.Features;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,14 +23,20 @@ import java.util.Map;
 
 import static org.lappsgrid.vocabulary.Features.Token;
 
+/**
+ *
+ * @author Chunqi SHI (shicq@cs.brandeis.edu)
+ * @author Keigh Rim (krim@brandeis.edu)
+ * @since 2014-03-25
+ *
+ */
 @org.lappsgrid.annotations.ServiceMetadata(
         description = "Stanford CoreNLP 3.3.1 Coreference",
         requires_format = { "text", "lif" },
         produces_format = { "lif" },
         produces = { "coref", "token", "markable" }
 )
-public class Coreference extends AbstractStanfordCoreNLPWebService implements
-        ICoreference {
+public class Coreference extends AbstractStanfordCoreNLPWebService {
 
     public Coreference() {
         this.init(PROP_TOKENIZE,PROP_SENTENCE_SPLIT,
@@ -87,7 +93,7 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
             if(mentions.size() <= 1)
                 continue;
             ArrayList<String> mentionIds = new ArrayList<>();
-            for (CorefChain.CorefMention mention : mentions) {
+            for (CorefMention mention : mentions) {
                 CoreMap sent = sents.get(mention.sentNum - 1);
                 List<CoreLabel> tokens = sent.get(TokensAnnotation.class);
                 int mBegin = tokens.get(mention.startIndex - 1).beginPosition();
@@ -100,17 +106,18 @@ public class Coreference extends AbstractStanfordCoreNLPWebService implements
                 for (int m = mention.startIndex; m < mention.endIndex; m++)
                     // stanford idx starts from 1, need to subtract 1 for each index
                     targets.add("tk_" + (mention.sentNum - 1) + "_" + (m - 1));
-                mentionAnn.getFeatures().put("targets", targets);
-                mentionIds.add("m_" + mention.mentionID);
+                mentionAnn.getFeatures().put(Features.Markable.TARGETS, targets);
+                mentionIds.add(MENTION_ID + mention.mentionID);
 
             }
 
-            // TODO 151017 current corefId will be the same as mentionID of representative,
-            // should we use incremental ID starting from 0 (or 1) ?
+            // instead of using own ID numbering, we can take the numeric ID from
+            // CorefChainAnnotation class, which is always the same as the id of
+            // representative mention.
             Annotation chain = view.newAnnotation(COREF_ID + corefId, Uri.COREF);
             chain.addFeature("representative",
-                    "m_" + coref.getRepresentativeMention().mentionID);
-            chain.getFeatures().put("mentions", mentionIds);
+                    MENTION_ID + coref.getRepresentativeMention().mentionID);
+            chain.getFeatures().put(Features.Coreference.MENTIONS, mentionIds);
         }
 
         Data<Container> data = new Data<>(Uri.LIF, container);

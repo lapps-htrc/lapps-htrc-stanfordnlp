@@ -1,7 +1,6 @@
 package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
-import edu.brandeis.cs.lappsgrid.stanford.corenlp.api.ISplitter;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetEndAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
@@ -12,19 +11,24 @@ import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
 import org.lappsgrid.serialization.lif.View;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.lappsgrid.discriminator.Discriminators.Uri;
 
+/**
+ *
+ * @author Chunqi SHI (shicq@cs.brandeis.edu)
+ * @author Keigh Rim (krim@brandeis.edu)
+ * @since 2014-03-25
+ *
+ */
 @org.lappsgrid.annotations.ServiceMetadata(
         description = "Stanford CoreNLP 3.3.1 Sentence Splitter",
         requires_format = { "text", "lif" },
         produces_format = { "lif" },
         produces = { "sentence" }
 )
-public class Splitter extends AbstractStanfordCoreNLPWebService implements
-        ISplitter {
+public class Splitter extends AbstractStanfordCoreNLPWebService {
 
     public Splitter() {
         this.init(PROP_TOKENIZE, PROP_SENTENCE_SPLIT);
@@ -54,19 +58,4 @@ public class Splitter extends AbstractStanfordCoreNLPWebService implements
         return Serializer.toJson(data);
     }
 
-
-    @Override
-    public String[] split(String docs) {
-        edu.stanford.nlp.pipeline.Annotation annotation
-                = new edu.stanford.nlp.pipeline.Annotation(docs);
-        snlp.annotate(annotation);
-
-        ArrayList<String> list = new ArrayList<String> ();
-
-        List<CoreMap> sentences = annotation.get(SentencesAnnotation.class);
-        for (CoreMap sentence1 : sentences) {
-            list.add(sentence1.toString());
-        }
-        return list.toArray(new String[list.size()]);
-    }
 }

@@ -1,7 +1,6 @@
 package edu.brandeis.cs.lappsgrid.stanford.corenlp;
 
 import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
-import edu.brandeis.cs.lappsgrid.stanford.corenlp.api.IParser;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetEndAnnotation;
@@ -18,22 +17,26 @@ import org.lappsgrid.serialization.lif.Container;
 import org.lappsgrid.serialization.lif.View;
 import org.lappsgrid.vocabulary.Features;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.*;
 
 import static org.lappsgrid.discriminator.Discriminators.Uri;
 import static org.lappsgrid.vocabulary.Features.PhraseStructure;
 import static org.lappsgrid.vocabulary.Features.Token;
 
+/**
+ *
+ * @author Chunqi SHI (shicq@cs.brandeis.edu)
+ * @author Keigh Rim (krim@brandeis.edu)
+ * @since 2014-03-25
+ *
+ */
 @org.lappsgrid.annotations.ServiceMetadata(
         description = "Stanford CoreNLP 3.3.1 Phrase Structure Parser",
         requires_format = { "text", "lif" },
         produces_format = { "lif" },
         produces = { "constituent", "token", "phrase-structure" }
 )
-public class Parser extends AbstractStanfordCoreNLPWebService implements
-        IParser {
+public class Parser extends AbstractStanfordCoreNLPWebService {
 
 
     public Parser() {
@@ -127,25 +130,6 @@ public class Parser extends AbstractStanfordCoreNLPWebService implements
 
         Data<Container> data = new Data<>(Uri.LIF, container);
         return Serializer.toJson(data);
-    }
-
-
-    @Override
-    public String parse(String docs) {
-        edu.stanford.nlp.pipeline.Annotation annotation
-                = new edu.stanford.nlp.pipeline.Annotation(docs);
-        snlp.annotate(annotation);
-
-        StringWriter sw = new StringWriter();
-        PrintWriter writer = new PrintWriter(sw);
-        List<CoreMap> sentences = annotation.get(SentencesAnnotation.class);
-        for (CoreMap sentence1 : sentences) {
-            for (Tree tree : sentence1.get(TreeAnnotation.class)) {
-                tree.printLocalTree(writer);
-            }
-        }
-        // return null;
-        return sw.toString();
     }
 
 }
