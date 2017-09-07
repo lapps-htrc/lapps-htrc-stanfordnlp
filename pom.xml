@@ -86,6 +86,20 @@
                 </configuration>
             </plugin>
 
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.0.2</version>
+                <executions>
+                    <execution>
+                        <id>re-process-resources</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>resources</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
 
             <plugin>
                 <!-- Hit out-of-memory during test with the default options -->
