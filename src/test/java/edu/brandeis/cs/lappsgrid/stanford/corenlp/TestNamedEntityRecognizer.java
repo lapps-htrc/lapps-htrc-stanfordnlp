@@ -42,16 +42,10 @@ public class TestNamedEntityRecognizer extends TestService {
         ServiceMetadata metadata = super.testCommonMetadata();
         IOSpecification requires = metadata.getRequires();
         IOSpecification produces = metadata.getProduces();
-        assertEquals("Expected 4 annotations, found: " + produces.getAnnotations().size(),
-                4, produces.getAnnotations().size());
-        assertTrue("Date not produced",
-                produces.getAnnotations().contains(Uri.DATE));
-        assertTrue("Person not produced",
-                produces.getAnnotations().contains(Uri.PERSON));
-        assertTrue("Organization not produced",
-                produces.getAnnotations().contains(Uri.ORGANIZATION));
-        assertTrue("Location not produced",
-                produces.getAnnotations().contains(Uri.LOCATION));
+        assertEquals("Expected 1 annotations, found: " + produces.getAnnotations().size(),
+                1, produces.getAnnotations().size());
+        assertTrue("Instead of NE, found : " + produces.getAnnotations().get(0),
+                produces.getAnnotations().contains(Uri.NE));
     }
 
     @Test
@@ -70,6 +64,7 @@ public class TestNamedEntityRecognizer extends TestService {
         testSent = "Mike is a person.";
         result = service.execute(testSent);
         Container resultContainer = reconstructPayload(result);
+        System.out.println(Serializer.toPrettyJson(resultContainer));
         assertEquals("Text is corrupted.", resultContainer.getText(), testSent);
         List<View> views = resultContainer.getViews();
         if (views.size() != 1) {
@@ -82,9 +77,10 @@ public class TestNamedEntityRecognizer extends TestService {
             fail(String.format("Expected 1 NE. Found: %d", views.size()));
         }
         Annotation mike = annotations.get(0);
-        assertEquals("Mike is a person. @type is not correct: " + mike.getAtType(),
-                mike.getAtType(), Uri.PERSON);
-        System.out.println(Serializer.toPrettyJson(resultContainer));
+        assertEquals("Mike is a person. label is not correct: " + mike.getLabel(),
+                "person", mike.getLabel());
+        assertEquals("Mike is a person. category is not correct: " + mike.getFeature("category"),
+                "person", mike.getFeature("category"));
     }
 }
 

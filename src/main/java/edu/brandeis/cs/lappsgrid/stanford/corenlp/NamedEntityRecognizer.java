@@ -26,7 +26,7 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
         name = "edu.brandeis.cs.lappsgrid.stanford.corenlp.NamedEntityRecognizer",
         requires_format = { "text", "lif" },
         produces_format = { "lif" },
-        produces = { "person", "location", "date", "organization" }
+        produces = { "ne" }
 )
 public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService {
 
@@ -52,23 +52,16 @@ public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService {
         List<CoreMap> sents = annotation.get(SentencesAnnotation.class);
         for (CoreMap sent : sents) {
             for (CoreLabel token : sent.get(TokensAnnotation.class)) {
-                String ner = token.ner();
-                if(ner != null && !ner.equalsIgnoreCase("O")) {
-                    String type = null;
-                    switch (ner.toLowerCase()) {
-                        case "person": type = Uri.PERSON;
-                            break;
-                        case "location": type = Uri.LOCATION;
-                            break;
-                        case "date": type = Uri.DATE;
-                            break;
-                        case "organization": type = Uri.ORGANIZATION;
-                            break;
-                    }
+                String label = token.ner();
+                if(label != null && !label.equalsIgnoreCase("O")) {
+                    label = label.toLowerCase();
+                    String type = Uri.NE;
                     if(type != null) {
-                        Annotation ann = view.newAnnotation(NE_ID + (++id), type,
+                        Annotation ann = new Annotation(NE_ID + (++id), type, label,
                                 token.beginPosition(), token.endPosition());
+                        ann.addFeature("category", label);
                         ann.addFeature("word", token.value());
+                        view.addAnnotation(ann);
                     }
                 }
             }
