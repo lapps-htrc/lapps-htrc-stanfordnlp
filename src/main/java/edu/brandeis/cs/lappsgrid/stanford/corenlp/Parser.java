@@ -10,6 +10,7 @@ import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
 import edu.stanford.nlp.util.CoreMap;
+import edu.stanford.nlp.util.IntPair;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Annotation;
@@ -64,15 +65,16 @@ public class Parser extends AbstractStanfordCoreNLPWebService {
         snlp.annotate(annotation);
         List<CoreMap> sents = annotation.get(SentencesAnnotation.class);
 
-        int sid = 0;
+        int sid = 1;
         for (CoreMap sent : sents) {
 
             Map<String, String> childToParent = new HashMap<>();
 
             // first, populate tokens
             Map<String, String> tokenIndex = new HashMap<>();
-            int tid = 0;
-            for (CoreLabel token : sent.get(TokensAnnotation.class)) {
+            int tid = 1; // from 1 because Tree.indexLeaves() (in later) will start from 1
+            List<CoreLabel> tokens = sent.get(TokensAnnotation.class);
+            for (CoreLabel token : tokens) {
                 String tokenId = String.format("%s%d_%d", TOKEN_ID, sid, tid++);
                 tokenIndex.put(token.word(), tokenId);
                 Annotation ann = view.newAnnotation(tokenId,
@@ -83,37 +85,35 @@ public class Parser extends AbstractStanfordCoreNLPWebService {
 
             // then populate constituents.
             // constituents indexed left-right breadth-first
-            // leaves are indexed by stanford (off by 1 from tokenIDs from above)
-            int cid = 0;
+            // leaves are indexed by stanford
+            int cid = 1;
+            int nextNonTerminal = cid + 1; // because the first non terminal is always the root.
             Annotation ps = view.newAnnotation(PS_ID + sid, Uri.PHRASE_STRUCTURE,
                     sent.get(CharacterOffsetBeginAnnotation.class),
                     sent.get(CharacterOffsetEndAnnotation.class));
             Tree root = sent.get(TreeAnnotation.class);
-            root.indexLeaves(true);
+            root.indexLeaves(true); // index all tokens, starting from 1
+            root.setSpans(); // token offsets for all nodes (it starts from 0 and inclusive on both sides)
             Queue<Tree> queue = new LinkedList<>();
             queue.add(root);
             List<String> allConstituents = new LinkedList<>();
-            int nextNonTerminal = 1;
             while (!queue.isEmpty()) {
                 Tree cur = queue.remove();
-                if (cur.numChildren() != 0) {
-                    String curID = String.format(
-                            "%s%d_%d", CONSTITUENT_ID, sid, cid++);
+                if (!cur.isLeaf()) {
+                    String curID = String.format("%s%d_%d", CONSTITUENT_ID, sid, cid++);
                     allConstituents.add(curID);
-                    String curLabel = cur.label().value();
-                    Annotation constituent = view.newAnnotation(curID, Uri.CONSTITUENT);
-                    constituent.setLabel(curLabel);
+                    IntPair curSpan = cur.getSpan(); // this is token offsets, not characters
+                    Annotation constituent = view.newAnnotation( curID, Uri.CONSTITUENT,
+                            tokens.get(curSpan.getSource()).beginPosition(),
+                            tokens.get(curSpan.getTarget()).endPosition());
+                    constituent.setLabel(cur.label().value());
                     ArrayList<String> childrenIDs = new ArrayList<>();
 
                     for (Tree child : cur.getChildrenAsList()) {
                         queue.add(child);
-                        String childID;
-                        if (child.numChildren() > 0) {
-                            childID = String.format("%s%d_%d", CONSTITUENT_ID, sid, nextNonTerminal++);
-                        } else {
-                            childID = String.format("%s%d_%d", TOKEN_ID, sid,
-                                    ((CoreLabel) child.label()).index() - 1);
-                        }
+                        String childID = child.isLeaf() ?
+                                String.format("%s%d_%d", TOKEN_ID, sid, ((CoreLabel) child.label()).index())
+                                : String.format("%s%d_%d", CONSTITUENT_ID, sid, nextNonTerminal++);
                         childToParent.put(childID, curID);
                         childrenIDs.add(childID);
                     }
