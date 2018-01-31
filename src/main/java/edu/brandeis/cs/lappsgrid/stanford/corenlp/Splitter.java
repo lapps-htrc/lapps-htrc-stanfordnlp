@@ -38,7 +38,7 @@ public class Splitter extends AbstractStanfordCoreNLPWebService {
     public String execute(Container container) throws StanfordWebServiceException {
 
         String text = container.getText();
-        View view = container.newView();
+        View view = container.newView(generateViewId(container));
         view.addContains(Uri.SENTENCE,
                 String.format("%s:%s", this.getClass().getName(), getVersion()),
                 "splitter:stanford");

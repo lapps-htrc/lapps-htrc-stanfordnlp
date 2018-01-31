@@ -49,7 +49,7 @@ public class Parser extends AbstractStanfordCoreNLPWebService {
 
         String text = container.getText();
 
-        View view = container.newView();
+        View view = container.newView(generateViewId(container));
         view.addContains(Uri.TOKEN,
                 String.format("%s:%s", this.getClass().getName(), getVersion()),
                 "tokenizer:stanford");

@@ -48,8 +48,7 @@ public class Coreference extends AbstractStanfordCoreNLPWebService {
 
         String text = container.getText();
 
-        // Prepare two containers, one for tokens and one for coreference chain
-        View view = container.newView();
+        View view = container.newView(generateViewId(container));
         view.addContains(Uri.TOKEN,
                 String.format("%s:%s", this.getClass().getName(), getVersion()),
                 "tokenizer:stanford");

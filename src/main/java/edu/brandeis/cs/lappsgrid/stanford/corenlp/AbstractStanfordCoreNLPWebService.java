@@ -8,6 +8,7 @@ import org.lappsgrid.metadata.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Container;
+import org.lappsgrid.serialization.lif.View;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,6 +61,7 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
     static final String PROP_CORERENCE = "dcoref";
     static final String PROP_KEY = "annotators";
 
+    static final String VIEW_ID = "v_";
     static final String TOKEN_ID = "tk_";
     static final String SENT_ID = "s_";
     static final String CONSTITUENT_ID = "c_";
@@ -230,5 +232,30 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
         return this.metadata;
     }
 
+    /**
+     * This is an interim method to generate view ID along with serialization library 2.4.0
+     * see https://github.com/lapps/org.lappsgrid.serialization/blob/v2.4.0/src/main/groovy/org/lappsgrid/serialization/lif/Container.groovy#L184
+     * The library will automatically give a new ID starting from 2.5.0, but not that is not
+     * included in the org.lappsgrid.all pom.
+     * @param container - a LIF container that contains N views
+     * @return - a view id string
+     */
+    String generateViewId(Container container) {
+        int id = container.getViews().size();
+        String idString = null;
+        boolean conflict = true;
+        while (conflict) {
+            conflict = false;
+            idString = String.format("%s%d", VIEW_ID, id);
+            for (View exisingView : container.getViews()) {
+                if (exisingView.getId().equals(idString)) {
+                    conflict = true;
+                    id++;
+                    break;
+                }
+            }
+        }
+        return idString;
+    }
 }
 
