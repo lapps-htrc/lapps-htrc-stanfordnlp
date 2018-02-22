@@ -106,7 +106,9 @@ public class Parser extends AbstractStanfordCoreNLPWebService {
                     Annotation constituent = view.newAnnotation( curID, Uri.CONSTITUENT,
                             tokens.get(curSpan.getSource()).beginPosition(),
                             tokens.get(curSpan.getTarget()).endPosition());
-                    constituent.setLabel(cur.label().value());
+                    // TODO: 2/22/2018 top-level "label" will go away after LIF JSON scheme 1.1.0
+                    String constituentLabel = cur.label().value();
+                    constituent.setLabel(constituentLabel);
                     ArrayList<String> childrenIDs = new ArrayList<>();
 
                     for (Tree child : cur.getChildrenAsList()) {
@@ -117,8 +119,10 @@ public class Parser extends AbstractStanfordCoreNLPWebService {
                         childToParent.put(childID, curID);
                         childrenIDs.add(childID);
                     }
-                    constituent.getFeatures().put(Features.Constituent.CHILDREN, childrenIDs);
-                    constituent.getFeatures().put(Features.Constituent.PARENT, childToParent.get(curID));
+                    constituent.addFeature(Features.Constituent.CHILDREN, childrenIDs);
+                    constituent.addFeature(Features.Constituent.PARENT, childToParent.get(curID));
+                    // as of LIF JSON scheme 1.1.0, all the "label"-ish go into the features map
+                    constituent.addFeature(Features.Constituent.LABEL, constituentLabel);
                 }
             }
             sid++;

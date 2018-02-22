@@ -38,6 +38,8 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
 )
 public class DependencyParser extends AbstractStanfordCoreNLPWebService {
 
+    private static String rootLabel = "ROOT";
+
     public DependencyParser() {
         this.init(PROP_TOKENIZE, PROP_SENTENCE_SPLIT, PROP_PARSE);
     }
@@ -74,12 +76,15 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService {
                 String id = String.format("%s%d_%d", DEPENDENCY_ID, cntSent, cntEdge++);
                 dependencies.add(id);
                 Annotation dependency = view.newAnnotation(id, Uri.DEPENDENCY);
-                dependency.setLabel("ROOT");
+                // TODO: 2/22/2018 top-level "label" will go away after LIF JSON scheme 1.1.0
+                dependency.setLabel(rootLabel);
                 dependency.addFeature(Features.Dependency.GOVERNOR,
                         "null");
                 dependency.addFeature(Features.Dependency.DEPENDENT,
                         makeTokenId(cntSent, root.index() - 1));
                 dependency.addFeature("dependent_word", root.word());
+                // as of LIF JSON scheme 1.1.0, all the "label"-ish go into the features map
+                dependency.addFeature(Features.Dependency.LABEL, rootLabel);
             }
             for(SemanticGraphEdge edge:graph.getEdgeSet()) {
                 String id = String.format("%s%d_%d",
@@ -87,7 +92,9 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService {
                 dependencies.add(id);
 
                 Annotation dependency = view.newAnnotation(id, Uri.DEPENDENCY);
-                dependency.setLabel(edge.getRelation().toString());
+                String depLabel = edge.getRelation().toString();
+                // TODO: 2/22/2018 top-level "label" will go away after LIF JSON scheme 1.1.0
+                dependency.setLabel(depLabel);
                 // stanford indexing starts from 1, for consistency, we start from 0
                 dependency.addFeature(Features.Dependency.GOVERNOR,
                         makeTokenId(cntSent, edge.getGovernor().index() - 1));
@@ -95,6 +102,8 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService {
                 dependency.addFeature(Features.Dependency.DEPENDENT,
                         makeTokenId(cntSent, edge.getDependent().index() - 1));
                 dependency.addFeature("dependent_word", edge.getDependent().word());
+                // as of LIF JSON scheme 1.1.0, all the "label"-ish go into the features map
+                dependency.addFeature(Features.Dependency.LABEL, depLabel);
 
             }
             ann.getFeatures().put("dependencies", dependencies);
