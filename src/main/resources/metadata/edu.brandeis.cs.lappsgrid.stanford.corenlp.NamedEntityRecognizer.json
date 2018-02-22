@@ -1,7 +1,7 @@
 {
   "$schema" : "http://vocab.lappsgrid.org/schema/service-schema-1.0.0.json",
   "name" : "edu.brandeis.cs.lappsgrid.stanford.corenlp.NamedEntityRecognizer",
-  "version" : "2.1.0-SNAPSHOT",
+  "version" : "2.1.1-SNAPSHOT",
   "vendor" : "http://www.cs.brandeis.edu/",
   "allow" : "http://vocab.lappsgrid.org/ns/allow#any",
   "license" : "http://vocab.lappsgrid.org/ns/license#apache-2.0",
