@@ -1,6 +1,6 @@
-package edu.brandeis.cs.lappsgrid.stanford.corenlp;
+package edu.brandeis.lapps.stanford.corenlp;
 
-import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
+import edu.brandeis.lapps.stanford.StanfordWebServiceException;
 import junit.framework.Assert;
 import org.junit.Test;
 import org.lappsgrid.metadata.IOSpecification;

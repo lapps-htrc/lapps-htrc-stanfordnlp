@@ -1,6 +1,6 @@
-package edu.brandeis.cs.lappsgrid.stanford.corenlp;
+package edu.brandeis.lapps.stanford.corenlp;
 
-import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
+import edu.brandeis.lapps.stanford.StanfordWebServiceException;
 import junit.framework.Assert;
 import org.junit.Test;
 import org.lappsgrid.metadata.IOSpecification;
@@ -17,7 +17,7 @@ import static org.junit.Assert.*;
 import static org.lappsgrid.discriminator.Discriminators.Uri;
 
 /**
- * <i>TestPOSTagger.java</i> Language Application Grids (<b>LAPPS</b>)
+ * <i>TestSplitter.java</i> Language Application Grids (<b>LAPPS</b>)
  * <p> 
  * <p> Test cases are from <a href="http://www.programcreek.com/2012/05/opennlp-tutorial/">OpenNLP Tutorial</a>
  * <p> 
@@ -25,27 +25,27 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
  * @author Chunqi Shi ( <i>shicq@cs.brandeis.edu</i> )<br>Nov 20, 2013<br>
  *
  */
-public class TestPOSTagger extends TestService {
+public class TestSplitter extends TestService {
 
-    String testSent = "Hello World.";
+    String testSent = "If possible, we would appreciate comments no later than 3:00 PM EST on Sunday, August 26.  Comments can be faxed to my attention at 202/338-2416 or emailed to cfr@vnf.com or gdb@vnf.com (Gary GaryBachman).\n\nThank you.";
 
-    public TestPOSTagger() throws StanfordWebServiceException {
-        service = new POSTagger();
+    public TestSplitter() throws StanfordWebServiceException {
+        service = new Splitter();
     }
 
     @Test
-    public void testMetadata(){
+    public void testMetadata() {
         ServiceMetadata metadata = super.testCommonMetadata();
         IOSpecification requires = metadata.getRequires();
         IOSpecification produces = metadata.getProduces();
         assertEquals("Expected 1 annotation, found: " + produces.getAnnotations().size(),
                 1, produces.getAnnotations().size());
-        assertTrue("POS tags not produced", produces.getAnnotations().contains(Uri.POS));
+        assertEquals("Sentences not produced", Uri.SENTENCE,
+                produces.getAnnotations().get(0));
     }
 
     @Test
     public void testExecute(){
-
         String result0 = service.execute(testSent);
         String input = new Data<>(Uri.LIF, wrapContainer(testSent)).asJson();
         String result = service.execute(input);
@@ -57,8 +57,6 @@ public class TestPOSTagger extends TestService {
         System.out.println(result);
         System.out.println("------------------------------------------------------------------------------>");
 
-        testSent = "Good morning.";
-        result = service.execute(testSent);
         Container resultContainer = reconstructPayload(result);
         assertEquals("Text is corrupted.", resultContainer.getText(), testSent);
         List<View> views = resultContainer.getViews();
@@ -66,16 +64,12 @@ public class TestPOSTagger extends TestService {
             fail(String.format("Expected 1 view. Found: %d", views.size()));
         }
         View view = resultContainer.getView(0);
-        assertTrue("Not containing POS tags", view.contains(Uri.POS));
+        assertTrue("Not containing sentences", view.contains(Uri.SENTENCE));
         List<Annotation> annotations = view.getAnnotations();
         if (annotations.size() != 3) {
-            fail(String.format("Expected 3 tokens. Found: %d", views.size()));
+            fail(String.format("Expected 3 sentences. Found: %d", annotations.size()));
         }
-        Annotation annotation = annotations.get(0);
-        assertEquals("@type is not correct: " + annotation.getAtType(),
-                annotation.getAtType(), Uri.POS);
-        String goodPos = annotation.getFeature("pos");
-        assertEquals("'Good' is a JJ.Found: " + goodPos, goodPos, "JJ");
         System.out.println(Serializer.toPrettyJson(resultContainer));
     }
 }
+

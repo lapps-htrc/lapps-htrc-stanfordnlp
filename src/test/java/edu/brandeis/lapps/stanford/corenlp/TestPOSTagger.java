@@ -1,6 +1,6 @@
-package edu.brandeis.cs.lappsgrid.stanford.corenlp;
+package edu.brandeis.lapps.stanford.corenlp;
 
-import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
+import edu.brandeis.lapps.stanford.StanfordWebServiceException;
 import junit.framework.Assert;
 import org.junit.Test;
 import org.lappsgrid.metadata.IOSpecification;
@@ -17,7 +17,7 @@ import static org.junit.Assert.*;
 import static org.lappsgrid.discriminator.Discriminators.Uri;
 
 /**
- * <i>TestTokenizer.java</i> Language Application Grids (<b>LAPPS</b>)
+ * <i>TestPOSTagger.java</i> Language Application Grids (<b>LAPPS</b>)
  * <p> 
  * <p> Test cases are from <a href="http://www.programcreek.com/2012/05/opennlp-tutorial/">OpenNLP Tutorial</a>
  * <p> 
@@ -25,12 +25,12 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
  * @author Chunqi Shi ( <i>shicq@cs.brandeis.edu</i> )<br>Nov 20, 2013<br>
  *
  */
-public class TestTokenizer extends TestService {
+public class TestPOSTagger extends TestService {
 
     String testSent = "Hello World.";
 
-    public TestTokenizer() throws StanfordWebServiceException {
-        service = new Tokenizer();
+    public TestPOSTagger() throws StanfordWebServiceException {
+        service = new POSTagger();
     }
 
     @Test
@@ -40,8 +40,7 @@ public class TestTokenizer extends TestService {
         IOSpecification produces = metadata.getProduces();
         assertEquals("Expected 1 annotation, found: " + produces.getAnnotations().size(),
                 1, produces.getAnnotations().size());
-        assertTrue("Tokens not produced",
-                produces.getAnnotations().contains(Uri.TOKEN));
+        assertTrue("POS tags not produced", produces.getAnnotations().contains(Uri.POS));
     }
 
     @Test
@@ -58,6 +57,8 @@ public class TestTokenizer extends TestService {
         System.out.println(result);
         System.out.println("------------------------------------------------------------------------------>");
 
+        testSent = "Good morning.";
+        result = service.execute(testSent);
         Container resultContainer = reconstructPayload(result);
         assertEquals("Text is corrupted.", resultContainer.getText(), testSent);
         List<View> views = resultContainer.getViews();
@@ -65,11 +66,16 @@ public class TestTokenizer extends TestService {
             fail(String.format("Expected 1 view. Found: %d", views.size()));
         }
         View view = resultContainer.getView(0);
-        assertTrue("Not containing tokens", view.contains(Uri.TOKEN));
+        assertTrue("Not containing POS tags", view.contains(Uri.POS));
         List<Annotation> annotations = view.getAnnotations();
         if (annotations.size() != 3) {
-            fail(String.format("Expected 3 token. Found: %d", annotations.size()));
+            fail(String.format("Expected 3 tokens. Found: %d", views.size()));
         }
+        Annotation annotation = annotations.get(0);
+        assertEquals("@type is not correct: " + annotation.getAtType(),
+                annotation.getAtType(), Uri.POS);
+        String goodPos = annotation.getFeature("pos");
+        assertEquals("'Good' is a JJ.Found: " + goodPos, goodPos, "JJ");
         System.out.println(Serializer.toPrettyJson(resultContainer));
     }
 }

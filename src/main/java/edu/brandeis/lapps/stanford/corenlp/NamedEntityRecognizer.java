@@ -1,6 +1,6 @@
-package edu.brandeis.cs.lappsgrid.stanford.corenlp;
+package edu.brandeis.lapps.stanford.corenlp;
 
-import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
+import edu.brandeis.lapps.stanford.StanfordWebServiceException;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -19,46 +19,52 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
  *
  * @author Chunqi SHI (shicq@cs.brandeis.edu)
  * @author Keigh Rim (krim@brandeis.edu)
- * @since 2014-03-25
+ * @since 2014-01-31
  *
  */
 @org.lappsgrid.annotations.ServiceMetadata(
-        description = "Stanford CoreNLP 3.3.1 Tokenizer",
+        name = "NamedEntityRecognizer",
         requires_format = { "text", "lif" },
         produces_format = { "lif" },
-        produces = { "token" }
+        produces = { "ne" }
 )
-public class Tokenizer extends AbstractStanfordCoreNLPWebService {
+public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService {
 
-    public Tokenizer() {
-        this.init(PROP_TOKENIZE, PROP_SENTENCE_SPLIT);
+
+    public NamedEntityRecognizer() {
+        this.init(PROP_TOKENIZE, PROP_SENTENCE_SPLIT,
+                PROP_POS_TAG, PROP_LEMMA, PROP_NER);
     }
 
     @Override
-    public String execute(Container container) throws StanfordWebServiceException {
+    public String execute(Container container)
+            throws StanfordWebServiceException {
 
         String text = container.getText();
         View view = container.newView(generateViewId(container));
-        view.addContains(Uri.TOKEN,
-                String.format("%s:%s", this.getClass().getName(),getVersion()),
-                "tokenizer:stanford");
-
-        // run stanford module
+        view.addContains(Uri.NE,
+                String.format("%s:%s", this.getClass().getName(), getVersion()),
+                "ner:stanford");
+        int id = -1;
         edu.stanford.nlp.pipeline.Annotation annotation
                 = new edu.stanford.nlp.pipeline.Annotation(text);
         snlp.annotate(annotation);
-        int sid = 0;
         List<CoreMap> sents = annotation.get(SentencesAnnotation.class);
         for (CoreMap sent : sents) {
-            int tid = 0;
             for (CoreLabel token : sent.get(TokensAnnotation.class)) {
-                Annotation ann = view.newAnnotation(
-                        String.format("%s%d_%d", TOKEN_ID, sid, tid), Uri.TOKEN,
-                        token.beginPosition(), token.endPosition());
-                tid++;
-                ann.getFeatures().put("word", token.value());
+                String label = token.ner();
+                if(label != null && !label.equalsIgnoreCase("O")) {
+                    label = label.toLowerCase();
+                    String type = Uri.NE;
+                    if(type != null) {
+                        Annotation ann = new Annotation(NE_ID + (++id), type, label,
+                                token.beginPosition(), token.endPosition());
+                        ann.addFeature("category", label);
+                        ann.addFeature("word", token.value());
+                        view.addAnnotation(ann);
+                    }
+                }
             }
-            sid++;
         }
         // set discriminator to LIF
         Data<Container> data = new Data<>(Uri.LIF, container);

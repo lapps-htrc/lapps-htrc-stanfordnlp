@@ -1,7 +1,6 @@
-package edu.brandeis.cs.lappsgrid.stanford.corenlp;
+package edu.brandeis.lapps.stanford.corenlp;
 
-import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
-import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
+import edu.brandeis.lapps.stanford.StanfordWebServiceException;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -15,7 +14,6 @@ import org.lappsgrid.serialization.lif.View;
 import java.util.List;
 
 import static org.lappsgrid.discriminator.Discriminators.Uri;
-import static org.lappsgrid.vocabulary.Features.Token;
 
 /**
  *
@@ -25,44 +23,44 @@ import static org.lappsgrid.vocabulary.Features.Token;
  *
  */
 @org.lappsgrid.annotations.ServiceMetadata(
-        description = "Stanford CoreNLP 3.3.1 Parts-of-speech Tagger",
+        description = "Stanford CoreNLP 3.3.1 Tokenizer",
         requires_format = { "text", "lif" },
         produces_format = { "lif" },
-        produces = { "pos" }
+        produces = { "token" }
 )
-public class POSTagger extends AbstractStanfordCoreNLPWebService {
+public class Tokenizer extends AbstractStanfordCoreNLPWebService {
 
-    public POSTagger() {
-        this.init(PROP_TOKENIZE, PROP_SENTENCE_SPLIT, PROP_POS_TAG);
+    public Tokenizer() {
+        this.init(PROP_TOKENIZE, PROP_SENTENCE_SPLIT);
     }
 
     @Override
-    public String execute(Container container)
-            throws StanfordWebServiceException {
+    public String execute(Container container) throws StanfordWebServiceException {
 
         String text = container.getText();
         View view = container.newView(generateViewId(container));
-        view.addContains(Uri.POS,
-                String.format("%s:%s", this.getClass().getName(), getVersion()),
-                "tagger:stanford");
+        view.addContains(Uri.TOKEN,
+                String.format("%s:%s", this.getClass().getName(),getVersion()),
+                "tokenizer:stanford");
+
+        // run stanford module
         edu.stanford.nlp.pipeline.Annotation annotation
                 = new edu.stanford.nlp.pipeline.Annotation(text);
         snlp.annotate(annotation);
-
         int sid = 0;
         List<CoreMap> sents = annotation.get(SentencesAnnotation.class);
         for (CoreMap sent : sents) {
             int tid = 0;
             for (CoreLabel token : sent.get(TokensAnnotation.class)) {
-                Annotation a = view.newAnnotation(
-                        String.format("%s%d_%d", TOKEN_ID, sid, tid++), Uri.POS,
+                Annotation ann = view.newAnnotation(
+                        String.format("%s%d_%d", TOKEN_ID, sid, tid), Uri.TOKEN,
                         token.beginPosition(), token.endPosition());
-                a.addFeature(Token.POS, token.get(PartOfSpeechAnnotation.class));
-                a.addFeature(Token.WORD, token.value());
+                tid++;
+                ann.getFeatures().put("word", token.value());
             }
             sid++;
         }
-
+        // set discriminator to LIF
         Data<Container> data = new Data<>(Uri.LIF, container);
         return Serializer.toJson(data);
     }

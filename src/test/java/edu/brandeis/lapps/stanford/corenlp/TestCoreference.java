@@ -1,6 +1,6 @@
-package edu.brandeis.cs.lappsgrid.stanford.corenlp;
+package edu.brandeis.lapps.stanford.corenlp;
 
-import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
+import edu.brandeis.lapps.stanford.StanfordWebServiceException;
 import junit.framework.Assert;
 import org.junit.Test;
 import org.lappsgrid.metadata.IOSpecification;
@@ -16,7 +16,7 @@ import static org.junit.Assert.*;
 import static org.lappsgrid.discriminator.Discriminators.Uri;
 
 /**
- * <i>TestParser.java</i> Language Application Grids (<b>LAPPS</b>)
+ * <i>TestTokenizer.java</i> Language Application Grids (<b>LAPPS</b>)
  * <p> 
  * <p> Test cases are from <a href="http://www.programcreek.com/2012/05/opennlp-tutorial/">OpenNLP Tutorial</a>
  * <p> 
@@ -24,34 +24,33 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
  * @author Chunqi Shi ( <i>shicq@cs.brandeis.edu</i> )<br>Nov 20, 2013<br>
  *
  */
-public class TestDependencyParser extends TestService {
+public class TestCoreference extends TestService {
 
-    String testSent = "Hi, Programcreek is a very huge and useful website.";
+    String testSent= "Mike, Smith is a good person and he is from Boston. John and Mary went to the store. They bought some milk.";
 
-    public TestDependencyParser() throws StanfordWebServiceException {
-        service = new DependencyParser();
+    public TestCoreference() throws StanfordWebServiceException {
+        service = new Coreference();
     }
 
 
     @Test
-    public void testMetadata() {
+    public void testMetadata(){
         ServiceMetadata metadata = super.testCommonMetadata();
         IOSpecification requires = metadata.getRequires();
         IOSpecification produces = metadata.getProduces();
-        assertEquals("Expected 3 annotations, found: " + produces.getAnnotations().size(),
+        assertEquals(
+                "Expected 3 annotations, found: " + produces.getAnnotations().size(),
                 3, produces.getAnnotations().size());
         assertTrue("Tokens not produced",
                 produces.getAnnotations().contains(Uri.TOKEN));
-        assertTrue("Dependencies not produced",
-                produces.getAnnotations().contains(Uri.DEPENDENCY));
-        assertTrue("Dependency Structures not produced",
-                produces.getAnnotations().contains(Uri.DEPENDENCY_STRUCTURE));
+        assertTrue("Markabels not produced",
+                produces.getAnnotations().contains(Uri.MARKABLE));
+        assertTrue("Coreference chains not produced",
+                produces.getAnnotations().contains(Uri.COREF));
     }
 
     @Test
     public void testExecute(){
-
-
         String result0 = service.execute(testSent);
         String input = new Data<>(Uri.LIF, wrapContainer(testSent)).asJson();
         String result = service.execute(input);
@@ -62,10 +61,8 @@ public class TestDependencyParser extends TestService {
         System.out.println(result);
         System.out.println("------------------------------------------------------------------------------>");
 
-
-        input = "Hi, Programcreek is a very huge and useful website.";
-        result = service.execute(input);
         Container resultContainer = reconstructPayload(result);
+
         assertEquals("Text is corrupted.", resultContainer.getText(), testSent);
         List<View> views = resultContainer.getViews();
         if (views.size() != 1) {
@@ -73,8 +70,8 @@ public class TestDependencyParser extends TestService {
         }
         View view = resultContainer.getView(0);
         assertTrue("Not containing tokens", view.contains(Uri.TOKEN));
-        assertTrue("Not containing dependency", view.contains(Uri.DEPENDENCY));
-        assertTrue("Not containing dependency structure", view.contains(Uri.DEPENDENCY_STRUCTURE));
+        assertTrue("Not containing markables", view.contains(Uri.MARKABLE));
+        assertTrue("Not containing coreference chains", view.contains(Uri.COREF));
         System.out.println(Serializer.toPrettyJson(resultContainer));
     }
 }

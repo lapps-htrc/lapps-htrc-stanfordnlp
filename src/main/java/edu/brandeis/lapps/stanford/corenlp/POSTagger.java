@@ -1,6 +1,7 @@
-package edu.brandeis.cs.lappsgrid.stanford.corenlp;
+package edu.brandeis.lapps.stanford.corenlp;
 
-import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
+import edu.brandeis.lapps.stanford.StanfordWebServiceException;
+import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -14,26 +15,25 @@ import org.lappsgrid.serialization.lif.View;
 import java.util.List;
 
 import static org.lappsgrid.discriminator.Discriminators.Uri;
+import static org.lappsgrid.vocabulary.Features.Token;
 
 /**
  *
  * @author Chunqi SHI (shicq@cs.brandeis.edu)
  * @author Keigh Rim (krim@brandeis.edu)
- * @since 2014-01-31
+ * @since 2014-03-25
  *
  */
 @org.lappsgrid.annotations.ServiceMetadata(
-        name = "edu.brandeis.cs.lappsgrid.stanford.corenlp.NamedEntityRecognizer",
+        description = "Stanford CoreNLP 3.3.1 Parts-of-speech Tagger",
         requires_format = { "text", "lif" },
         produces_format = { "lif" },
-        produces = { "ne" }
+        produces = { "pos" }
 )
-public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService {
+public class POSTagger extends AbstractStanfordCoreNLPWebService {
 
-
-    public NamedEntityRecognizer() {
-        this.init(PROP_TOKENIZE, PROP_SENTENCE_SPLIT,
-                PROP_POS_TAG, PROP_LEMMA, PROP_NER);
+    public POSTagger() {
+        this.init(PROP_TOKENIZE, PROP_SENTENCE_SPLIT, PROP_POS_TAG);
     }
 
     @Override
@@ -42,31 +42,27 @@ public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService {
 
         String text = container.getText();
         View view = container.newView(generateViewId(container));
-        view.addContains(Uri.NE,
+        view.addContains(Uri.POS,
                 String.format("%s:%s", this.getClass().getName(), getVersion()),
-                "ner:stanford");
-        int id = -1;
+                "tagger:stanford");
         edu.stanford.nlp.pipeline.Annotation annotation
                 = new edu.stanford.nlp.pipeline.Annotation(text);
         snlp.annotate(annotation);
+
+        int sid = 0;
         List<CoreMap> sents = annotation.get(SentencesAnnotation.class);
         for (CoreMap sent : sents) {
+            int tid = 0;
             for (CoreLabel token : sent.get(TokensAnnotation.class)) {
-                String label = token.ner();
-                if(label != null && !label.equalsIgnoreCase("O")) {
-                    label = label.toLowerCase();
-                    String type = Uri.NE;
-                    if(type != null) {
-                        Annotation ann = new Annotation(NE_ID + (++id), type, label,
-                                token.beginPosition(), token.endPosition());
-                        ann.addFeature("category", label);
-                        ann.addFeature("word", token.value());
-                        view.addAnnotation(ann);
-                    }
-                }
+                Annotation a = view.newAnnotation(
+                        String.format("%s%d_%d", TOKEN_ID, sid, tid++), Uri.POS,
+                        token.beginPosition(), token.endPosition());
+                a.addFeature(Token.POS, token.get(PartOfSpeechAnnotation.class));
+                a.addFeature(Token.WORD, token.value());
             }
+            sid++;
         }
-        // set discriminator to LIF
+
         Data<Container> data = new Data<>(Uri.LIF, container);
         return Serializer.toJson(data);
     }

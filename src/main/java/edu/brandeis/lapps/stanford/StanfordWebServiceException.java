@@ -1,7 +1,7 @@
 /**
  * 
  */
-package edu.brandeis.cs.lappsgrid.stanford;
+package edu.brandeis.lapps.stanford;
 
 /**
  * Define the Exception for Web Service Wrapping for Stanford NLP Tools

@@ -1,12 +1,13 @@
-package edu.brandeis.cs.lappsgrid.stanford.corenlp;
+package edu.brandeis.lapps.stanford.corenlp;
 
-import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
+import edu.brandeis.lapps.stanford.StanfordWebServiceException;
 import junit.framework.Assert;
 import org.junit.Test;
 import org.lappsgrid.metadata.IOSpecification;
 import org.lappsgrid.metadata.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
+import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
 import org.lappsgrid.serialization.lif.View;
 
@@ -24,37 +25,33 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
  * @author Chunqi Shi ( <i>shicq@cs.brandeis.edu</i> )<br>Nov 20, 2013<br>
  *
  */
-public class TestCoreference extends TestService {
+public class TestTokenizer extends TestService {
 
-    String testSent= "Mike, Smith is a good person and he is from Boston. John and Mary went to the store. They bought some milk.";
+    String testSent = "Hello World.";
 
-    public TestCoreference() throws StanfordWebServiceException {
-        service = new Coreference();
+    public TestTokenizer() throws StanfordWebServiceException {
+        service = new Tokenizer();
     }
-
 
     @Test
     public void testMetadata(){
         ServiceMetadata metadata = super.testCommonMetadata();
         IOSpecification requires = metadata.getRequires();
         IOSpecification produces = metadata.getProduces();
-        assertEquals(
-                "Expected 3 annotations, found: " + produces.getAnnotations().size(),
-                3, produces.getAnnotations().size());
+        assertEquals("Expected 1 annotation, found: " + produces.getAnnotations().size(),
+                1, produces.getAnnotations().size());
         assertTrue("Tokens not produced",
                 produces.getAnnotations().contains(Uri.TOKEN));
-        assertTrue("Markabels not produced",
-                produces.getAnnotations().contains(Uri.MARKABLE));
-        assertTrue("Coreference chains not produced",
-                produces.getAnnotations().contains(Uri.COREF));
     }
 
     @Test
     public void testExecute(){
+
         String result0 = service.execute(testSent);
         String input = new Data<>(Uri.LIF, wrapContainer(testSent)).asJson();
         String result = service.execute(input);
         Assert.assertEquals(result0, result);
+
         System.out.println("<------------------------------------------------------------------------------");
         System.out.println(String.format("      %s         ", this.getClass().getName()));
         System.out.println("-------------------------------------------------------------------------------");
@@ -62,7 +59,6 @@ public class TestCoreference extends TestService {
         System.out.println("------------------------------------------------------------------------------>");
 
         Container resultContainer = reconstructPayload(result);
-
         assertEquals("Text is corrupted.", resultContainer.getText(), testSent);
         List<View> views = resultContainer.getViews();
         if (views.size() != 1) {
@@ -70,8 +66,10 @@ public class TestCoreference extends TestService {
         }
         View view = resultContainer.getView(0);
         assertTrue("Not containing tokens", view.contains(Uri.TOKEN));
-        assertTrue("Not containing markables", view.contains(Uri.MARKABLE));
-        assertTrue("Not containing coreference chains", view.contains(Uri.COREF));
+        List<Annotation> annotations = view.getAnnotations();
+        if (annotations.size() != 3) {
+            fail(String.format("Expected 3 token. Found: %d", annotations.size()));
+        }
         System.out.println(Serializer.toPrettyJson(resultContainer));
     }
 }

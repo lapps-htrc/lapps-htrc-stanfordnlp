@@ -1,6 +1,6 @@
-package edu.brandeis.cs.lappsgrid.stanford.corenlp;
+package edu.brandeis.lapps.stanford.corenlp;
 
-import edu.brandeis.cs.lappsgrid.stanford.StanfordWebServiceException;
+import edu.brandeis.lapps.stanford.StanfordWebServiceException;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import org.apache.xerces.impl.io.UTF8Reader;
 import org.lappsgrid.api.WebService;
@@ -131,7 +131,7 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
 
     private StanfordCoreNLP getProcessor(Properties props) {
         String key = props.getProperty(PROP_KEY);
-        log.info(String.format("Retriveing from cache: %s", key));
+        log.info(String.format("Retrieving from cache: %s", key));
         StanfordCoreNLP val = cache.get(key);
         if (val == null) {
             val = new StanfordCoreNLP(props);
