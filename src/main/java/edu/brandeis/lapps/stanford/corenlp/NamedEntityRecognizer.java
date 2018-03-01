@@ -6,6 +6,7 @@ import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.util.CoreMap;
 import org.lappsgrid.serialization.Data;
+import org.lappsgrid.serialization.LifException;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
@@ -41,7 +42,12 @@ public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService {
             throws StanfordWebServiceException {
 
         String text = container.getText();
-        View view = container.newView(generateViewId(container));
+        View view = null;
+        try {
+            view = container.newView();
+        } catch (LifException ignored) {
+            // this never raises as newView() will check for duplicate view-id internally
+        }
         view.addContains(Uri.NE,
                 String.format("%s:%s", this.getClass().getName(), getVersion()),
                 "ner:stanford");

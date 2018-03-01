@@ -30,6 +30,12 @@
     </pluginRepositories>
 
     <dependencies>
+        <!-- this should really be inherited from org.lappsgrid.all pom, but it's not at the moment -->
+        <dependency>
+            <groupId>org.lappsgrid</groupId>
+            <artifactId>serialization</artifactId>
+            <version>2.5.0</version>
+        </dependency>
         <dependency>
             <groupId>org.lappsgrid</groupId>
             <artifactId>all</artifactId>
