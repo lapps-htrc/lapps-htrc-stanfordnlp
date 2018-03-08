@@ -10,6 +10,7 @@ import org.lappsgrid.serialization.LifException;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
+import org.lappsgrid.serialization.lif.Contains;
 import org.lappsgrid.serialization.lif.View;
 
 import java.util.List;
@@ -24,7 +25,7 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
  *
  */
 @org.lappsgrid.annotations.ServiceMetadata(
-        name = "NamedEntityRecognizer",
+        description = "Stanford CoreNLP 3.3.1 Named Entity Recognizer",
         requires_format = { "text", "lif" },
         produces_format = { "lif" },
         produces = { "ne" }

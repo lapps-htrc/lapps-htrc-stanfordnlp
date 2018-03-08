@@ -36,7 +36,7 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
  */
 
 @org.lappsgrid.annotations.CommonMetadata(
-
+        schema = "http://vocab.lappsgrid.org/schema/1.1.0/lif-schema-1.1.0.json",
         requires_encoding = "UTF-8",
         produces_encoding = "UTF-8",
         vendor = "http://www.cs.brandeis.edu/",
@@ -175,6 +175,7 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
                 break;
             case Uri.TEXT:
                 cont = new Container();
+                // TODO: 2/22/2018 there is no way to add '$schema' field using serialization API 
                 cont.setText((String) data.getPayload());
                 cont.setLanguage("en");
                 break;
