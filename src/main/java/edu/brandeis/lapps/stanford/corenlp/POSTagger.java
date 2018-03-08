@@ -38,8 +38,7 @@ public class POSTagger extends AbstractStanfordCoreNLPWebService {
     }
 
     @Override
-    public String execute(Container container)
-            throws StanfordWebServiceException {
+    public String execute(Container container) throws StanfordWebServiceException {
 
         String text = container.getText();
         View view = null;
@@ -62,8 +61,9 @@ public class POSTagger extends AbstractStanfordCoreNLPWebService {
             int tid = 0;
             for (CoreLabel token : sent.get(TokensAnnotation.class)) {
                 Annotation a = view.newAnnotation(
-                        String.format("%s%d_%d", TOKEN_ID, sid, tid++), Uri.POS,
+                        String.format("%s%d_%d", TOKEN_ID, sid, tid++), Uri.TOKEN,
                         token.beginPosition(), token.endPosition());
+                a.setLabel(token.get(PartOfSpeechAnnotation.class));
                 a.addFeature(Token.POS, token.get(PartOfSpeechAnnotation.class));
                 a.addFeature(Token.WORD, token.value());
             }

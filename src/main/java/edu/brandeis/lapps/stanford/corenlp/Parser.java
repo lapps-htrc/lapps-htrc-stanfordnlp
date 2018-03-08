@@ -102,6 +102,10 @@ public class Parser extends AbstractStanfordCoreNLPWebService {
             root.setSpans(); // token offsets for all nodes (it starts from 0 and inclusive on both sides)
             Queue<Tree> queue = new LinkedList<>();
             queue.add(root);
+            // as the ROOT always enqued first, it will get the first cid.
+            ps.addFeature(PhraseStructure.ROOT, String.format("%s%d_%d", CONSTITUENT_ID, sid, cid));
+            ps.addFeature("sentence", sent.toString());
+            ps.addFeature("penntree", root.pennString());
             List<String> allConstituents = new LinkedList<>();
             while (!queue.isEmpty()) {
                 Tree cur = queue.remove();
@@ -131,11 +135,8 @@ public class Parser extends AbstractStanfordCoreNLPWebService {
                     constituent.addFeature(Features.Constituent.LABEL, constituentLabel);
                 }
             }
+            ps.addFeature(PhraseStructure.CONSTITUENTS, allConstituents);
             sid++;
-            ps.getFeatures().put("sentence", sent.toString());
-            ps.getFeatures().put("penntree", root.pennString());
-            ps.getFeatures().put(PhraseStructure.CONSTITUENTS,
-                    allConstituents);
         }
 
         Data<Container> data = new Data<>(Uri.LIF, container);

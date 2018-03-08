@@ -112,7 +112,7 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService {
                 dependency.addFeature(Features.Dependency.LABEL, depLabel);
 
             }
-            ann.getFeatures().put("dependencies", dependencies);
+            ann.addFeature("dependencies", dependencies);
 
 
             int cntToken = 0;

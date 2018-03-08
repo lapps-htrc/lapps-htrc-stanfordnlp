@@ -62,13 +62,11 @@ public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService {
                 if(label != null && !label.equalsIgnoreCase("O")) {
                     label = label.toLowerCase();
                     String type = Uri.NE;
-                    if(type != null) {
-                        Annotation ann = new Annotation(NE_ID + (++id), type, label,
-                                token.beginPosition(), token.endPosition());
-                        ann.addFeature("category", label);
-                        ann.addFeature("word", token.value());
-                        view.addAnnotation(ann);
-                    }
+                    Annotation ann = new Annotation(NE_ID + (++id), type, label,
+                            token.beginPosition(), token.endPosition());
+                    ann.addFeature("category", label);
+                    ann.addFeature("word", token.value());
+                    view.addAnnotation(ann);
                 }
             }
         }

@@ -57,7 +57,9 @@ public class Splitter extends AbstractStanfordCoreNLPWebService {
             int start = sent.get(CharacterOffsetBeginAnnotation.class);
             int end = sent.get(CharacterOffsetEndAnnotation.class);
             Annotation ann = view.newAnnotation(SENT_ID + (++id), Uri.SENTENCE, start, end);
-            ann.getFeatures().put("sentence", sent.toString());
+            // TODO: 3/1/2018 this should go away when we complete ditch the "top-level" label field in LIF scheme
+            ann.setLabel("sentence");
+            ann.addFeature("sentence", sent.toString());
         }
         // set discriminator to LIF
         Data<Container> data = new Data<>(Uri.LIF, container);

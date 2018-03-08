@@ -62,7 +62,9 @@ public class Tokenizer extends AbstractStanfordCoreNLPWebService {
                         String.format("%s%d_%d", TOKEN_ID, sid, tid), Uri.TOKEN,
                         token.beginPosition(), token.endPosition());
                 tid++;
-                ann.getFeatures().put("word", token.value());
+                // TODO: 3/1/2018 this should go away when we complete ditch the "top-level" label field in LIF scheme
+                ann.setLabel("token");
+                ann.addFeature("word", token.value());
             }
             sid++;
         }

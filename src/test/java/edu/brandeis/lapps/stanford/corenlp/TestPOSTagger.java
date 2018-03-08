@@ -73,7 +73,7 @@ public class TestPOSTagger extends TestService {
         }
         Annotation annotation = annotations.get(0);
         assertEquals("@type is not correct: " + annotation.getAtType(),
-                annotation.getAtType(), Uri.POS);
+                annotation.getAtType(), Uri.TOKEN);
         String goodPos = annotation.getFeature("pos");
         assertEquals("'Good' is a JJ.Found: " + goodPos, goodPos, "JJ");
         System.out.println(Serializer.toPrettyJson(resultContainer));
