@@ -33,7 +33,8 @@ import static org.lappsgrid.vocabulary.Features.Token;
  *
  */
 @org.lappsgrid.annotations.ServiceMetadata(
-        description = "Stanford CoreNLP 3.3.1 Coreference",
+        description = "This service is a wrapper around Stanford CoreNLP 3.3.1 providing a coreference resolution service" +
+                "\nInternally it uses CoreNLP default \"tokenize\", \"ssplit\", \"pos\", \"lemma\", \"ner\", \"parse\", \"dcoref\" annotators.",
         requires_format = { "text", "lif" },
         produces_format = { "lif" },
         produces = { "coref", "token", "markable" }

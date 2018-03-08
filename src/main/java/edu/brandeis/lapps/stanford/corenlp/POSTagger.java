@@ -27,7 +27,8 @@ import static org.lappsgrid.vocabulary.Features.Token;
  *
  */
 @org.lappsgrid.annotations.ServiceMetadata(
-        description = "Stanford CoreNLP 3.3.1 Parts-of-speech Tagger",
+        description = "This service is a wrapper around Stanford CoreNLP 3.3.1 providing a part-of-speech tagging service" +
+                "\nInternally it uses CoreNLP default \"tokenize\", \"ssplit\", \"pos\" annotators.",
         requires_format = { "text", "lif" },
         produces_format = { "lif" },
         produces = { "pos" }

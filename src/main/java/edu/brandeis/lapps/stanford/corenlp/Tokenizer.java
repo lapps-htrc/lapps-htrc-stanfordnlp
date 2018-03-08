@@ -24,7 +24,8 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
  *
  */
 @org.lappsgrid.annotations.ServiceMetadata(
-        description = "Stanford CoreNLP 3.3.1 Tokenizer",
+        description = "This service is a wrapper around Stanford CoreNLP 3.3.1 providing a tokenizer service" +
+                "\nInternally it uses CoreNLP default \"tokenize\", \"ssplit\" annotators.",
         requires_format = { "text", "lif" },
         produces_format = { "lif" },
         produces = { "token" }

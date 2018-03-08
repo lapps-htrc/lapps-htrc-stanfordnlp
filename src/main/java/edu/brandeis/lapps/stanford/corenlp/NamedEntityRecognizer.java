@@ -25,7 +25,8 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
  *
  */
 @org.lappsgrid.annotations.ServiceMetadata(
-        description = "Stanford CoreNLP 3.3.1 Named Entity Recognizer",
+        description = "This service is a wrapper around Stanford CoreNLP 3.3.1 providing a named entity recognition service" +
+                "\nInternally it uses CoreNLP default \"tokenize\", \"ssplit\", \"pos\", \"lemma\", \"ner\" annotators.",
         requires_format = { "text", "lif" },
         produces_format = { "lif" },
         produces = { "ne" }

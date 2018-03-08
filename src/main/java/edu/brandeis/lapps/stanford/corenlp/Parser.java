@@ -34,7 +34,8 @@ import static org.lappsgrid.vocabulary.Features.Token;
  *
  */
 @org.lappsgrid.annotations.ServiceMetadata(
-        description = "Stanford CoreNLP 3.3.1 Phrase Structure Parser",
+        description = "This service is a wrapper around Stanford CoreNLP 3.3.1 providing a phrase structure parser service" +
+                "\nInternally it uses CoreNLP default \"tokenize\", \"ssplit\", \"parse\" annotators.",
         requires_format = { "text", "lif" },
         produces_format = { "lif" },
         produces = { "constituent", "token", "phrase-structure" }

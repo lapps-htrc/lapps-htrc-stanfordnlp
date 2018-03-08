@@ -1,8 +1,8 @@
 {
   "$schema" : "http://vocab.lappsgrid.org/schema/service-schema-1.0.0.json",
-  "name" : "edu.brandeis.cs.lappsgrid.stanford.corenlp.POSTagger",
-  "version" : "2.1.1-SNAPSHOT",
-  "description" : "Stanford CoreNLP 3.3.1 Parts-of-speech Tagger",
+  "name" : "edu.brandeis.lapps.stanford.corenlp.DependencyParser",
+  "version" : "2.2.0-SNAPSHOT",
+  "description" : "This service is a wrapper around Stanford CoreNLP 3.3.1 providing a dependency parser service\nInternally it uses CoreNLP default \"tokenize\", \"ssplit\", \"parse\" annotators.",
   "vendor" : "http://www.cs.brandeis.edu/",
   "allow" : "http://vocab.lappsgrid.org/ns/allow#any",
   "license" : "http://vocab.lappsgrid.org/ns/license#apache-2.0",
@@ -15,6 +15,6 @@
     "encoding" : "UTF-8",
     "language" : [ "en" ],
     "format" : [ "http://vocab.lappsgrid.org/ns/media/jsonld#lif" ],
-    "annotations" : [ "http://vocab.lappsgrid.org/Token#pos" ]
+    "annotations" : [ "http://vocab.lappsgrid.org/Dependency", "http://vocab.lappsgrid.org/DependencyStructure", "http://vocab.lappsgrid.org/Token" ]
   }
 }

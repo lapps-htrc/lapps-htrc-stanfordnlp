@@ -33,7 +33,8 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
  *
  */
 @org.lappsgrid.annotations.ServiceMetadata(
-        description = "Stanford CoreNLP 3.3.1 Dependency Parser",
+        description = "This service is a wrapper around Stanford CoreNLP 3.3.1 providing a dependency parser service" +
+                "\nInternally it uses CoreNLP default \"tokenize\", \"ssplit\", \"parse\" annotators.",
         requires_format = { "text", "lif" },
         produces_format = { "lif" },
         produces = { "dependency", "dependency-structure", "token" }
