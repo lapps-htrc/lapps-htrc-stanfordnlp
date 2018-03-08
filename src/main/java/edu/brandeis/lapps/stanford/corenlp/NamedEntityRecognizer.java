@@ -48,9 +48,11 @@ public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService {
         } catch (LifException ignored) {
             // this never raises as newView() will check for duplicate view-id internally
         }
-        view.addContains(Uri.NE,
+        Contains con = view.addContains(Uri.NE,
                 String.format("%s:%s", this.getClass().getName(), getVersion()),
                 "ner:stanford");
+        // TODO: 3/8/2018 change the value when one's ready
+        con.put("namedEntityCategorySet", "conll2003.eng");
         int id = -1;
         edu.stanford.nlp.pipeline.Annotation annotation
                 = new edu.stanford.nlp.pipeline.Annotation(text);

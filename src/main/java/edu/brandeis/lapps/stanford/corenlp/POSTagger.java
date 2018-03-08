@@ -11,6 +11,7 @@ import org.lappsgrid.serialization.LifException;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
+import org.lappsgrid.serialization.lif.Contains;
 import org.lappsgrid.serialization.lif.View;
 
 import java.util.List;
@@ -48,9 +49,12 @@ public class POSTagger extends AbstractStanfordCoreNLPWebService {
             // this never raises as newView() will check for duplicate view-id internally
         }
 
-        view.addContains(Uri.POS,
+        Contains con = view.addContains(Uri.POS,
                 String.format("%s:%s", this.getClass().getName(), getVersion()),
                 "tagger:stanford");
+        // TODO: 3/1/2018 there must be a set of discriminators for tag set names
+        // using some arbitrary string for now
+        con.put("posTagSet", "penn");
         edu.stanford.nlp.pipeline.Annotation annotation
                 = new edu.stanford.nlp.pipeline.Annotation(text);
         snlp.annotate(annotation);

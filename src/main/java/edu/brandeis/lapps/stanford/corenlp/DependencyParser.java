@@ -16,6 +16,7 @@ import org.lappsgrid.serialization.LifException;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
+import org.lappsgrid.serialization.lif.Contains;
 import org.lappsgrid.serialization.lif.View;
 import org.lappsgrid.vocabulary.Features;
 
@@ -54,15 +55,17 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService {
         } catch (LifException ignored) {
             // this never raises as newView() will check for duplicate view-id internally
         }
-        view.addContains(Uri.DEPENDENCY_STRUCTURE,
+        Contains containsToken = view.addContains(Uri.TOKEN ,
+                String.format("%s:%s", this.getClass().getName(), getVersion()),
+                "tokenizer:stanford");
+        containsToken.put("posTagSet", "penn");
+        Contains containsDep = view.addContains(Uri.DEPENDENCY_STRUCTURE,
                 String.format("%s:%s", this.getClass().getName(), getVersion()),
                 "dependency-parser:stanford");
+        containsDep.put("dependencySet", "StanfordDependencies");
         view.addContains(Uri.DEPENDENCY ,
                 String.format("%s:%s", this.getClass().getName(), getVersion()),
                 "dependency-parser:stanford");
-        view.addContains(Uri.TOKEN ,
-                String.format("%s:%s", this.getClass().getName(), getVersion()),
-                "tokenizer:stanford");
         edu.stanford.nlp.pipeline.Annotation doc
                 = new edu.stanford.nlp.pipeline.Annotation(text);
         snlp.annotate(doc);

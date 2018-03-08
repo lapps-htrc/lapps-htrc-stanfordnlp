@@ -14,6 +14,7 @@ import org.lappsgrid.serialization.LifException;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
+import org.lappsgrid.serialization.lif.Contains;
 import org.lappsgrid.serialization.lif.View;
 import org.lappsgrid.vocabulary.Features;
 
@@ -55,9 +56,10 @@ public class Coreference extends AbstractStanfordCoreNLPWebService {
         } catch (LifException e) {
             e.printStackTrace();
         }
-        view.addContains(Uri.TOKEN,
+        Contains containsToken = view.addContains(Uri.TOKEN,
                 String.format("%s:%s", this.getClass().getName(), getVersion()),
                 "tokenizer:stanford");
+        containsToken.put("posTagSet", "penn");
 
         view.addContains(Uri.COREF,
                 String.format("%s:%s", this.getClass().getName(), getVersion()),

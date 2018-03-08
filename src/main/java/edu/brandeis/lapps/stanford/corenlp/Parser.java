@@ -16,6 +16,7 @@ import org.lappsgrid.serialization.LifException;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
+import org.lappsgrid.serialization.lif.Contains;
 import org.lappsgrid.serialization.lif.View;
 import org.lappsgrid.vocabulary.Features;
 
@@ -56,12 +57,14 @@ public class Parser extends AbstractStanfordCoreNLPWebService {
         } catch (LifException ignored) {
             // this never raises as newView() will check for duplicate view-id internally
         }
-        view.addContains(Uri.TOKEN,
+        Contains containsToken = view.addContains(Uri.TOKEN,
                 String.format("%s:%s", this.getClass().getName(), getVersion()),
                 "tokenizer:stanford");
-        view.addContains(Uri.PHRASE_STRUCTURE,
+        containsToken.put("posTagSet", "penn");
+        Contains containsPhraseStructure = view.addContains(Uri.PHRASE_STRUCTURE,
                 String.format("%s:%s", this.getClass().getName(), getVersion()),
                 "syntacticparser:stanford");
+        containsPhraseStructure.put("categorySet", "pennTreeBank");
         view.addContains(Uri.CONSTITUENT,
                 String.format("%s:%s", this.getClass().getName(), getVersion()),
                 "syntacticparser:stanford");
