@@ -1,6 +1,5 @@
 package edu.brandeis.lapps.stanford.corenlp;
 
-import edu.brandeis.lapps.stanford.StanfordWebServiceException;
 import junit.framework.Assert;
 import org.junit.Test;
 import org.lappsgrid.metadata.IOSpecification;
@@ -28,7 +27,7 @@ public class TestCoreference extends TestService {
 
     String testSent= "Mike, Smith is a good person and he is from Boston. John and Mary went to the store. They bought some milk.";
 
-    public TestCoreference() throws StanfordWebServiceException {
+    public TestCoreference() {
         service = new Coreference();
     }
 

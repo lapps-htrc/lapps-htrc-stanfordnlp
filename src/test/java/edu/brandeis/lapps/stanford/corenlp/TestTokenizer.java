@@ -1,6 +1,5 @@
 package edu.brandeis.lapps.stanford.corenlp;
 
-import edu.brandeis.lapps.stanford.StanfordWebServiceException;
 import junit.framework.Assert;
 import org.junit.Test;
 import org.lappsgrid.metadata.IOSpecification;
@@ -29,7 +28,7 @@ public class TestTokenizer extends TestService {
 
     String testSent = "Hello World.";
 
-    public TestTokenizer() throws StanfordWebServiceException {
+    public TestTokenizer() {
         service = new Tokenizer();
     }
 

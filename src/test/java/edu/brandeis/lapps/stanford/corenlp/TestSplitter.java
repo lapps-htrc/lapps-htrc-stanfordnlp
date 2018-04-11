@@ -1,6 +1,5 @@
 package edu.brandeis.lapps.stanford.corenlp;
 
-import edu.brandeis.lapps.stanford.StanfordWebServiceException;
 import junit.framework.Assert;
 import org.junit.Test;
 import org.lappsgrid.metadata.IOSpecification;
@@ -29,7 +28,7 @@ public class TestSplitter extends TestService {
 
     String testSent = "If possible, we would appreciate comments no later than 3:00 PM EST on Sunday, August 26.  Comments can be faxed to my attention at 202/338-2416 or emailed to cfr@vnf.com or gdb@vnf.com (Gary GaryBachman).\n\nThank you.";
 
-    public TestSplitter() throws StanfordWebServiceException {
+    public TestSplitter() {
         service = new Splitter();
     }
 

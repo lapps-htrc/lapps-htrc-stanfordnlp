@@ -1,6 +1,5 @@
 package edu.brandeis.lapps.stanford.corenlp;
 
-import edu.brandeis.lapps.stanford.StanfordWebServiceException;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetEndAnnotation;
@@ -48,7 +47,7 @@ public class Parser extends AbstractStanfordCoreNLPWebService {
     }
 
     @Override
-    public String execute(Container container) throws StanfordWebServiceException {
+    public String execute(Container container) {
 
         String text = container.getText();
 

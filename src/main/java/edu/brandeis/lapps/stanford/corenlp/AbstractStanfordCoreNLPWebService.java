@@ -1,6 +1,5 @@
 package edu.brandeis.lapps.stanford.corenlp;
 
-import edu.brandeis.lapps.stanford.StanfordWebServiceException;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import org.apache.xerces.impl.io.UTF8Reader;
 import org.lappsgrid.api.WebService;
@@ -45,11 +44,11 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
 )
 public abstract class AbstractStanfordCoreNLPWebService implements WebService {
 
-    protected static final Logger log = LoggerFactory
+    private static final Logger log = LoggerFactory
             .getLogger(AbstractStanfordCoreNLPWebService.class);
 
 
-    static protected ConcurrentHashMap<String, StanfordCoreNLP> cache =
+    private static ConcurrentHashMap<String, StanfordCoreNLP> cache =
             new ConcurrentHashMap<>();
 
     static final String PROP_TOKENIZE = "tokenize";
@@ -61,7 +60,6 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
     static final String PROP_CORERENCE = "dcoref";
     static final String PROP_KEY = "annotators";
 
-    static final String VIEW_ID = "v_";
     static final String TOKEN_ID = "tk_";
     static final String SENT_ID = "s_";
     static final String CONSTITUENT_ID = "c_";
@@ -198,8 +196,7 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
     /**
      * This will be overridden for each module
      */
-    public abstract String execute(Container json)
-            throws StanfordWebServiceException;
+    public abstract String execute(Container json);
 
     private void loadMetadata() throws IOException {
         // get caller name using reflection
@@ -233,30 +230,5 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
         return this.metadata;
     }
 
-    /**
-     * This is an interim method to generate view ID along with serialization library 2.4.0
-     * see https://github.com/lapps/org.lappsgrid.serialization/blob/v2.4.0/src/main/groovy/org/lappsgrid/serialization/lif/Container.groovy#L184
-     * The library will automatically give a new ID starting from 2.5.0, but not that is not
-     * included in the org.lappsgrid.all pom.
-     * @param container - a LIF container that contains N views
-     * @return - a view id string
-     */
-    String generateViewId(Container container) {
-        int id = container.getViews().size();
-        String idString = null;
-        boolean conflict = true;
-        while (conflict) {
-            conflict = false;
-            idString = String.format("%s%d", VIEW_ID, id);
-            for (View exisingView : container.getViews()) {
-                if (exisingView.getId().equals(idString)) {
-                    conflict = true;
-                    id++;
-                    break;
-                }
-            }
-        }
-        return idString;
-    }
 }
 

@@ -1,6 +1,5 @@
 package edu.brandeis.lapps.stanford.corenlp;
 
-import edu.brandeis.lapps.stanford.StanfordWebServiceException;
 import edu.stanford.nlp.dcoref.CorefChain;
 import edu.stanford.nlp.dcoref.CorefChain.CorefMention;
 import edu.stanford.nlp.dcoref.CorefCoreAnnotations.CorefChainAnnotation;
@@ -47,7 +46,7 @@ public class Coreference extends AbstractStanfordCoreNLPWebService {
     }
 
     @Override
-    public String execute(Container container) throws StanfordWebServiceException {
+    public String execute(Container container) {
 
         String text = container.getText();
 

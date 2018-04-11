@@ -1,6 +1,5 @@
 package edu.brandeis.lapps.stanford.corenlp;
 
-import edu.brandeis.lapps.stanford.StanfordWebServiceException;
 import junit.framework.Assert;
 import org.junit.Test;
 import org.lappsgrid.metadata.IOSpecification;
@@ -28,7 +27,7 @@ public class TestDependencyParser extends TestService {
 
     String testSent = "Hi, Programcreek is a very huge and useful website.";
 
-    public TestDependencyParser() throws StanfordWebServiceException {
+    public TestDependencyParser() {
         service = new DependencyParser();
     }
 

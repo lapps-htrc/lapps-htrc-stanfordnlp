@@ -1,6 +1,5 @@
 package edu.brandeis.lapps.stanford.corenlp;
 
-import edu.brandeis.lapps.stanford.StanfordWebServiceException;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -40,8 +39,7 @@ public class NamedEntityRecognizer extends AbstractStanfordCoreNLPWebService {
     }
 
     @Override
-    public String execute(Container container)
-            throws StanfordWebServiceException {
+    public String execute(Container container) {
 
         String text = container.getText();
         View view = null;
