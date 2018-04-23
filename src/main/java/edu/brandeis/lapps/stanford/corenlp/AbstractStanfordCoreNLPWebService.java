@@ -1,13 +1,12 @@
 package edu.brandeis.lapps.stanford.corenlp;
 
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
-import org.apache.xerces.impl.io.UTF8Reader;
 import org.lappsgrid.api.WebService;
+import org.lappsgrid.metadata.IOSpecification;
 import org.lappsgrid.metadata.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Container;
-import org.lappsgrid.serialization.lif.View;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +14,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.lappsgrid.discriminator.Discriminators.Uri;
@@ -34,19 +32,10 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
  *
  */
 
-@org.lappsgrid.annotations.CommonMetadata(
-        schema = "http://vocab.lappsgrid.org/schema/1.1.0/lif-schema-1.1.0.json",
-        requires_encoding = "UTF-8",
-        produces_encoding = "UTF-8",
-        vendor = "http://www.cs.brandeis.edu/",
-        license = "apache2",
-        language = { "en" }
-)
 public abstract class AbstractStanfordCoreNLPWebService implements WebService {
 
     private static final Logger log = LoggerFactory
             .getLogger(AbstractStanfordCoreNLPWebService.class);
-
 
     private static ConcurrentHashMap<String, StanfordCoreNLP> cache =
             new ConcurrentHashMap<>();
@@ -59,7 +48,6 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
     static final String PROP_PARSE = "parse";
     static final String PROP_CORERENCE = "dcoref";
     static final String PROP_KEY = "annotators";
-
     static final String TOKEN_ID = "tk_";
     static final String SENT_ID = "s_";
     static final String CONSTITUENT_ID = "c_";
@@ -74,14 +62,14 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
     private Properties props = new Properties();
     StanfordCoreNLP snlp = null;
 
-    private String metadata;
+    private String metadataString;
 
     /**
      * Default constructor only tries to load metadata.
      */
     AbstractStanfordCoreNLPWebService() {
         try {
-            loadMetadata();
+            metadataString = loadMetadata();
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -198,37 +186,36 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
      */
     public abstract String execute(Container json);
 
-    private void loadMetadata() throws IOException {
-        // get caller name using reflection
-        String serviceName = this.getClass().getName();
-        String resName = "/metadata/"+ serviceName +".json";
-        log.info("load resources:" + resName);
-        InputStream inputStream = this.getClass().getResourceAsStream(resName);
-
-        if (inputStream == null) {
-            String message = "Unable to load metadata file for " + this.getClass().getName();
-            log.error(message);
-            throw new IOException(message);
-        } else {
-            UTF8Reader reader = new UTF8Reader(inputStream);
-            try {
-                Scanner s = new Scanner(reader).useDelimiter("\\A");
-                String metadataText = s.hasNext() ? s.next() : "";
-                this.metadata = (new Data<>(Uri.META,
-                        Serializer.parse(metadataText, ServiceMetadata.class))).asPrettyJson();
-            } catch (Exception e) {
-                String message = "Unable to parse json for " + this.getClass().getName();
-                log.error(message, e);
-                this.metadata = (new Data<>(Uri.ERROR, message)).asPrettyJson();
-            }
-            reader.close();
-        }
-    }
+    abstract String loadMetadata();
 
     @Override
     public String getMetadata() {
-        return this.metadata;
+        return this.metadataString;
     }
 
+    ServiceMetadata setCommonMetadata() {
+        ServiceMetadata commonMetadata = new ServiceMetadata();
+        // TODO: 4/22/18 fix url when it settles in
+        commonMetadata.setSchema("http://vocab.lappsgrid.org/schema/1.1.0/metadata-schema-1.1.0.json");
+        commonMetadata.setVendor("http://www.cs.brandeis.edu/");
+        commonMetadata.setLicense(Uri.APACHE2);
+        commonMetadata.setVersion(this.getVersion());
+        commonMetadata.setName(this.getClass().getName());
+
+        IOSpecification required = new IOSpecification();
+        required.addLanguage("en");
+        required.setEncoding("UTF-8");
+        required.addFormat(Uri.TEXT);
+        required.addFormat(Uri.LIF);
+        commonMetadata.setRequires(required);
+
+        IOSpecification produces = new IOSpecification();
+        produces.addLanguage("en");
+        produces.setEncoding("UTF-8");
+        produces.addFormat(Uri.LIF);
+        commonMetadata.setProduces(produces);
+
+        return commonMetadata;
+    }
 }
 

@@ -10,6 +10,7 @@ import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.BasicDependenciesAnnotation;
 import edu.stanford.nlp.semgraph.SemanticGraphEdge;
 import edu.stanford.nlp.util.CoreMap;
+import org.lappsgrid.metadata.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.LifException;
 import org.lappsgrid.serialization.Serializer;
@@ -31,16 +32,11 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
  * @since 2015-05-15
  *
  */
-@org.lappsgrid.annotations.ServiceMetadata(
-        description = "This service is a wrapper around Stanford CoreNLP 3.3.1 providing a dependency parser service" +
-                "\nInternally it uses CoreNLP default \"tokenize\", \"ssplit\", \"parse\" annotators.",
-        requires_format = { "text", "lif" },
-        produces_format = { "lif" },
-        produces = { "dependency", "dependency-structure", "token" }
-)
 public class DependencyParser extends AbstractStanfordCoreNLPWebService {
 
     private static String rootLabel = "ROOT";
+    private static String TOOL_DESCRIPTION = "This service is a wrapper around Stanford CoreNLP 3.3.1 providing a dependency parser service"
+            + "\nInternally it uses CoreNLP default \"tokenize\", \"ssplit\", \"parse\" annotators.";
 
     public DependencyParser() {
         this.init(PROP_TOKENIZE, PROP_SENTENCE_SPLIT, PROP_PARSE);
@@ -136,4 +132,14 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService {
         return String.format("%s%d_%d", TOKEN_ID, sid, tid);
     }
 
+    @Override
+    String loadMetadata() {
+        ServiceMetadata metadata = this.setCommonMetadata();
+
+        metadata.setDescription(TOOL_DESCRIPTION);
+        metadata.getProduces().addAnnotations(Uri.DEPENDENCY, Uri.DEPENDENCY_STRUCTURE, Uri.TOKEN);
+
+        return new Data<>(Uri.META, metadata).asPrettyJson();
+
+    }
 }

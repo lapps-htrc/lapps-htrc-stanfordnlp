@@ -32,7 +32,7 @@ public class TestService {
     }
 
     public ServiceMetadata testCommonMetadata() {
-        System.out.println(service.getMetadata());
+//        System.out.println(service.getMetadata());
         String json = service.getMetadata();
         assertNotNull(service.getClass().getName() + ".getMetadata() returned null", json);
 
