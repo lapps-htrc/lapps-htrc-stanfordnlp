@@ -10,7 +10,6 @@ import edu.stanford.nlp.util.CoreMap;
 import org.lappsgrid.discriminator.Discriminators.Uri;
 import org.lappsgrid.metadata.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
-import org.lappsgrid.serialization.LifException;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
@@ -48,11 +47,7 @@ public class Coreference extends AbstractStanfordCoreNLPWebService {
         String text = container.getText();
 
         View view = null;
-        try {
-            view = container.newView();
-        } catch (LifException e) {
-            e.printStackTrace();
-        }
+        view = container.newView();
         Contains containsToken = view.addContains(Uri.TOKEN,
                 String.format("%s:%s", this.getClass().getName(), getVersion()),
                 "tokenizer:stanford");

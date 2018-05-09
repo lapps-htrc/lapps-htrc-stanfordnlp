@@ -134,13 +134,12 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
     public String execute(String input) {
         if (input == null)
             return null;
-        input = input.trim();  // remove the whitespace.
         // in case of Json
         Data data;
 
         try {
             data = Serializer.parse(input, Data.class);
-            // Serializer#pase throws JsonParseException if input is not well-formed
+            // Serializer#parse throws JsonParseException if input is not well-formed
         } catch (Exception e) {
             data = new Data();
             data.setDiscriminator(Uri.TEXT);
@@ -154,14 +153,14 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
             case Uri.ERROR:
                 return input;
             case Uri.JSON_LD:
-                cont = new Container((Map) data.getPayload());
-                break;
             case Uri.LIF:
                 cont = new Container((Map) data.getPayload());
+                // TODO: 5/9/18 what if the existing payload has different schema version?
                 break;
             case Uri.TEXT:
                 cont = new Container();
-                // TODO: 2/22/2018 there is no way to add '$schema' field using serialization API 
+                // TODO: 5/9/18  fix url when it settles in
+                cont.setSchema("http://vocab.lappsgrid.org/schema/container-schema-1.0.0.json");
                 cont.setText((String) data.getPayload());
                 cont.setLanguage("en");
                 break;
@@ -196,7 +195,7 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
     ServiceMetadata setCommonMetadata() {
         ServiceMetadata commonMetadata = new ServiceMetadata();
         // TODO: 4/22/18 fix url when it settles in
-        commonMetadata.setSchema("http://vocab.lappsgrid.org/schema/1.1.0/metadata-schema-1.1.0.json");
+        commonMetadata.setSchema("http://vocab.lappsgrid.org/schema/metadata-schema-1.1.0.json");
         commonMetadata.setVendor("http://www.cs.brandeis.edu/");
         commonMetadata.setLicense(Uri.APACHE2);
         commonMetadata.setVersion(this.getVersion());

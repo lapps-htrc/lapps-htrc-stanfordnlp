@@ -6,7 +6,6 @@ import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.util.CoreMap;
 import org.lappsgrid.metadata.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
-import org.lappsgrid.serialization.LifException;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
@@ -37,11 +36,7 @@ public class Tokenizer extends AbstractStanfordCoreNLPWebService {
 
         String text = container.getText();
         View view = null;
-        try {
-            view = container.newView();
-        } catch (LifException ignored) {
-            // this never raises as newView() will check for duplicate view-id internally
-        }
+        view = container.newView();
         view.addContains(Uri.TOKEN,
                 String.format("%s:%s", this.getClass().getName(),getVersion()),
                 "tokenizer:stanford");
