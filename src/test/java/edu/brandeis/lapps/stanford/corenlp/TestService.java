@@ -21,6 +21,7 @@ public class TestService {
 
     protected Container wrapContainer(String plainText) {
         Container container = new Container();
+        container.setSchema("http://vocab.lappsgrid.org/schema/container-schema-1.0.0.json");
         container.setText(plainText);
         container.setLanguage("en");
         return container;
