@@ -1,8 +1,8 @@
 package edu.brandeis.lapps.stanford.corenlp;
 
-import edu.stanford.nlp.dcoref.CorefChain;
-import edu.stanford.nlp.dcoref.CorefChain.CorefMention;
-import edu.stanford.nlp.dcoref.CorefCoreAnnotations.CorefChainAnnotation;
+import edu.stanford.nlp.coref.data.CorefChain;
+import edu.stanford.nlp.coref.data.CorefChain.CorefMention;
+import edu.stanford.nlp.coref.CorefCoreAnnotations.CorefChainAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -33,7 +33,7 @@ import static org.lappsgrid.vocabulary.Features.Token;
  */
 public class Coreference extends AbstractStanfordCoreNLPWebService {
 
-    private static String TOOL_DESCRIPTION = "This service is a wrapper around Stanford CoreNLP 3.3.1 providing a coreference resolution service" +
+    private static String TOOL_DESCRIPTION = "This service is a wrapper around Stanford CoreNLP 3.9.1 providing a coreference resolution service" +
             "\nInternally it uses CoreNLP default \"tokenize\", \"ssplit\", \"pos\", \"lemma\", \"ner\", \"parse\", \"dcoref\" annotators.";
 
     public Coreference() {
@@ -86,39 +86,41 @@ public class Coreference extends AbstractStanfordCoreNLPWebService {
         // next iteration to populate mentions and markables
 
         Map<Integer, CorefChain> corefs = annotation.get(CorefChainAnnotation.class);
-        for(Integer corefId : corefs.keySet()) {
-            CorefChain coref =   corefs.get(corefId);
-            List<CorefMention> mentions = coref.getMentionsInTextualOrder();
-            if(mentions.size() <= 1)
-                continue;
-            ArrayList<String> mentionIds = new ArrayList<>();
-            for (CorefMention mention : mentions) {
-                CoreMap sent = sents.get(mention.sentNum - 1);
-                List<CoreLabel> tokens = sent.get(TokensAnnotation.class);
-                int mBegin = tokens.get(mention.startIndex - 1).beginPosition();
-                int mEnd = tokens.get(mention.endIndex - 2).endPosition();
-                Annotation mentionAnn = view.newAnnotation(
-                        MENTION_ID + mention.mentionID, Uri.MARKABLE, mBegin, mEnd);
-                mentionAnn.setLabel("markable");
-                mentionAnn.addFeature("words", text.substring(mBegin, mEnd));
-                mentionAnn.addFeature("sentenceIndex", Integer.toString(mention.sentNum - 1));
-                ArrayList<String> targets = new ArrayList<>();
-                for (int m = mention.startIndex; m < mention.endIndex; m++)
-                    // stanford idx starts from 1, need to subtract 1 for each index
-                    targets.add("tk_" + (mention.sentNum - 1) + "_" + (m - 1));
-                mentionAnn.addFeature(Features.Markable.TARGETS, targets);
-                mentionIds.add(MENTION_ID + mention.mentionID);
+        if (corefs != null) {
+            for (Integer corefId : corefs.keySet()) {
+                CorefChain coref = corefs.get(corefId);
+                List<CorefMention> mentions = coref.getMentionsInTextualOrder();
+                if (mentions.size() <= 1)
+                    continue;
+                ArrayList<String> mentionIds = new ArrayList<>();
+                for (CorefMention mention : mentions) {
+                    CoreMap sent = sents.get(mention.sentNum - 1);
+                    List<CoreLabel> tokens = sent.get(TokensAnnotation.class);
+                    int mBegin = tokens.get(mention.startIndex - 1).beginPosition();
+                    int mEnd = tokens.get(mention.endIndex - 2).endPosition();
+                    Annotation mentionAnn = view.newAnnotation(
+                            MENTION_ID + mention.mentionID, Uri.MARKABLE, mBegin, mEnd);
+                    mentionAnn.setLabel("markable");
+                    mentionAnn.addFeature("words", text.substring(mBegin, mEnd));
+                    mentionAnn.addFeature("sentenceIndex", Integer.toString(mention.sentNum - 1));
+                    ArrayList<String> targets = new ArrayList<>();
+                    for (int m = mention.startIndex; m < mention.endIndex; m++)
+                        // stanford idx starts from 1, need to subtract 1 for each index
+                        targets.add("tk_" + (mention.sentNum - 1) + "_" + (m - 1));
+                    mentionAnn.addFeature(Features.Markable.TARGETS, targets);
+                    mentionIds.add(MENTION_ID + mention.mentionID);
 
+                }
+
+                // instead of using own ID numbering, we can take the numeric ID from
+                // CorefChainAnnotation class, which is always the same as the id of
+                // representative mention.
+                Annotation chain = view.newAnnotation(COREF_ID + corefId, Uri.COREF);
+                chain.setLabel("coreference-chain");
+                chain.addFeature("representative",
+                        MENTION_ID + coref.getRepresentativeMention().mentionID);
+                chain.addFeature(Features.Coreference.MENTIONS, mentionIds);
             }
-
-            // instead of using own ID numbering, we can take the numeric ID from
-            // CorefChainAnnotation class, which is always the same as the id of
-            // representative mention.
-            Annotation chain = view.newAnnotation(COREF_ID + corefId, Uri.COREF);
-            chain.setLabel("coreference-chain");
-            chain.addFeature("representative",
-                    MENTION_ID + coref.getRepresentativeMention().mentionID);
-            chain.addFeature(Features.Coreference.MENTIONS, mentionIds);
         }
 
         Data<Container> data = new Data<>(Uri.LIF, container);

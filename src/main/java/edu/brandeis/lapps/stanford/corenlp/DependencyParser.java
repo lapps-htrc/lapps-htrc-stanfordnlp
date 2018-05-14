@@ -34,7 +34,7 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
 public class DependencyParser extends AbstractStanfordCoreNLPWebService {
 
     private static String rootLabel = "ROOT";
-    private static String TOOL_DESCRIPTION = "This service is a wrapper around Stanford CoreNLP 3.3.1 providing a dependency parser service"
+    private static String TOOL_DESCRIPTION = "This service is a wrapper around Stanford CoreNLP 3.9.1 providing a UNIVERSAL dependency parser service"
             + "\nInternally it uses CoreNLP default \"tokenize\", \"ssplit\", \"parse\" annotators.";
 
     public DependencyParser() {
@@ -86,7 +86,7 @@ public class DependencyParser extends AbstractStanfordCoreNLPWebService {
                 // as of LIF JSON scheme 1.1.0, all the "label"-ish go into the features map
                 dependency.addFeature(Features.Dependency.LABEL, rootLabel);
             }
-            for(SemanticGraphEdge edge:graph.getEdgeSet()) {
+            for(SemanticGraphEdge edge:graph.edgeIterable()) {
                 String id = String.format("%s%d_%d",
                         DEPENDENCY_ID, cntSent, cntEdge++);
                 dependencies.add(id);

@@ -24,7 +24,7 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
  */
 public class Tokenizer extends AbstractStanfordCoreNLPWebService {
 
-    private static String TOOL_DESCRIPTION = "This service is a wrapper around Stanford CoreNLP 3.3.1 providing a tokenizer service" +
+    private static String TOOL_DESCRIPTION = "This service is a wrapper around Stanford CoreNLP 3.9.1 providing a tokenizer service" +
             "\nInternally it uses CoreNLP default \"tokenize\", \"ssplit\" annotators.";
 
     public Tokenizer() {

@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>edu.brandeis.lapps</groupId>
     <artifactId>stanfordnlp-web-service</artifactId>
-    <version>2.2.0-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
     <packaging>war</packaging>
     <name>Brandeis LAPPS Web Services wrapping Stanford CoreNLP tools</name>
     <description>
@@ -19,7 +19,8 @@
 
     <properties>
         <lapps.all>2.4.0</lapps.all>
-        <stanford.version>3.3.1</stanford.version>
+        <stanford.version>3.9.1</stanford.version>
+        <buildDirectory>${project.basedir}/target</buildDirectory>
     </properties>
 
     <pluginRepositories>
@@ -28,19 +29,6 @@
             <url>http://repo.maven.apache.org/maven2/</url>
         </pluginRepository>
     </pluginRepositories>
-
-    <distributionManagement>
-        <repository>
-            <id>brandeis-nexus</id>
-            <name>Releases</name>
-            <url>http://morbius.cs-i.brandeis.edu:8081/repository/maven-releases/</url>
-        </repository>
-        <snapshotRepository>
-            <id>brandeis-nexus</id>
-            <name>Snapshot</name>
-            <url>http://morbius.cs-i.brandeis.edu:8081/repository/maven-snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
 
     <dependencies>
         <!-- this should really be inherited from org.lappsgrid.all pom, but it's not at the moment -->
@@ -67,12 +55,19 @@
         </dependency>
         <dependency>
             <groupId>edu.stanford.nlp</groupId>
+            <artifactId>stanford-corenlp</artifactId>
+            <version>${stanford.version}</version>
+            <classifier>models-english</classifier>
+        </dependency>
+        <dependency>
+            <groupId>edu.stanford.nlp</groupId>
             <artifactId>stanford-parser</artifactId>
             <version>${stanford.version}</version>
         </dependency>
     </dependencies>
 
     <build>
+        <directory>${buildDirectory}</directory>
 
         <finalName>stanfordnlp-web-service#${project.version}</finalName>
 

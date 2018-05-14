@@ -27,7 +27,7 @@ import static org.lappsgrid.vocabulary.Features.Token;
  */
 public class POSTagger extends AbstractStanfordCoreNLPWebService {
 
-    private static String TOOL_DESCRIPTION = "This service is a wrapper around Stanford CoreNLP 3.3.1 providing a part-of-speech tagging service" +
+    private static String TOOL_DESCRIPTION = "This service is a wrapper around Stanford CoreNLP 3.9.1 providing a part-of-speech tagging service" +
                     "\nInternally it uses CoreNLP default \"tokenize\", \"ssplit\", \"pos\" annotators.";
 
     public POSTagger() {

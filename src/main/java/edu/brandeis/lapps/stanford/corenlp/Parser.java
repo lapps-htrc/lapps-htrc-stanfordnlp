@@ -34,7 +34,7 @@ import static org.lappsgrid.vocabulary.Features.Token;
  */
 public class Parser extends AbstractStanfordCoreNLPWebService {
 
-    private static String TOOL_DESCRIPTION = "This service is a wrapper around Stanford CoreNLP 3.3.1 providing a phrase structure parser service" +
+    private static String TOOL_DESCRIPTION = "This service is a wrapper around Stanford CoreNLP 3.9.1 providing a phrase structure parser service" +
                     "\nInternally it uses CoreNLP default \"tokenize\", \"ssplit\", \"parse\" annotators.";
 
     public Parser() {
