@@ -110,6 +110,14 @@
                     <argLine>-Xms512m -Xmx2496m -XX:MaxPermSize=128m</argLine>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>8</source>
+                    <target>8</target>
+                </configuration>
+            </plugin>
         </plugins>
 
         <resources>

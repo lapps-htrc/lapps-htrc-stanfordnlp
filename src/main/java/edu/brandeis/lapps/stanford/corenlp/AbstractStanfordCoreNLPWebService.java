@@ -46,7 +46,10 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
     static final String PROP_LEMMA = "lemma";
     static final String PROP_NER = "ner";
     static final String PROP_PARSE = "parse";
+    static final String PROP_DEPPARSE = "depparse";
+    static final String PROP_NATURALLOGIC = "natlog";
     static final String PROP_CORERENCE = "dcoref";
+    static final String PROP_REALTION = "openie";
     static final String PROP_KEY = "annotators";
     static final String TOKEN_ID = "tk_";
     static final String SENT_ID = "s_";
@@ -56,6 +59,7 @@ public abstract class AbstractStanfordCoreNLPWebService implements WebService {
     static final String DS_ID = "ds_";
     static final String MENTION_ID = "m_";
     static final String COREF_ID = "coref_";
+    static final String REL_ID = "rel_";
     static final String NE_ID = "ne_";
 
 
