@@ -64,11 +64,11 @@ public class RelationExtractor extends AbstractStanfordCoreNLPWebService {
                 String objectId = String.format("%s%s_%s", MENTION_ID, sid, mid++);
 
                 view.addAnnotation(coreLabelsToRegion(triple.relation, relationId,
-                        Discriminators.Uri.MARKABLE));
+                        Discriminators.Uri.MARKABLE, null));
                 view.addAnnotation(coreLabelsToRegion(triple.subject, subjectId,
-                        Discriminators.Uri.MARKABLE));
+                        Discriminators.Uri.MARKABLE, text));
                 view.addAnnotation(coreLabelsToRegion(triple.object, objectId,
-                        Discriminators.Uri.MARKABLE));
+                        Discriminators.Uri.MARKABLE, text));
                 Annotation relationAnn = view.newAnnotation(
                         String.format("%s%s", REL_ID, rid++),
                         Discriminators.Uri.GENERIC_RELATION);
@@ -84,10 +84,11 @@ public class RelationExtractor extends AbstractStanfordCoreNLPWebService {
         return Serializer.toJson(data);
     }
     
-    private Annotation coreLabelsToRegion(List<CoreLabel> cLabels, String annId, String atType) {
+    private Annotation coreLabelsToRegion(List<CoreLabel> cLabels, String annId, String atType, String text) {
         int begin = cLabels.get(0).beginPosition();
         int end = cLabels.get(cLabels.size()-1).endPosition();
-        return new Annotation(annId, atType, begin, end);
+        Annotation ann = new Annotation(annId, atType, begin, end);
+        return ann;
 
     }
 
