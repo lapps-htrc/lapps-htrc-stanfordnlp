@@ -59,22 +59,37 @@ public class RelationExtractor extends AbstractStanfordCoreNLPWebService {
         List<CoreMap> sents = annotation.get(CoreAnnotations.SentencesAnnotation.class);
         for (CoreMap sent : sents) {
             for (RelationTriple triple : sent.get(NaturalLogicAnnotations.RelationTriplesAnnotation.class)) {
-                String relationId = String.format("%s%s_%s", MENTION_ID, sid, mid++);
-                String subjectId = String.format("%s%s_%s", MENTION_ID, sid, mid++);
-                String objectId = String.format("%s%s_%s", MENTION_ID, sid, mid++);
+                String predicateId = String.format("%s%s_%s", MENTION_ID, sid, mid++);
+                String arg1Id = String.format("%s%s_%s", MENTION_ID, sid, mid++);
+                String arg2Id = String.format("%s%s_%s", MENTION_ID, sid, mid++);
 
-                view.addAnnotation(coreLabelsToRegion(triple.relation, relationId,
+                Annotation pred = new Annotation(coreLabelsToRegion(triple.relation, predicateId,
                         Discriminators.Uri.MARKABLE, null));
-                view.addAnnotation(coreLabelsToRegion(triple.subject, subjectId,
+                pred.addFeature("text",
+                        text.substring(Math.toIntExact(pred.getStart()), Math.toIntExact(pred.getEnd())));
+                pred.addFeature("type", "predicate");
+                Annotation arg1 = new Annotation(coreLabelsToRegion(triple.subject, arg1Id,
                         Discriminators.Uri.MARKABLE, text));
-                view.addAnnotation(coreLabelsToRegion(triple.object, objectId,
+                arg1.addFeature("text",
+                        text.substring(Math.toIntExact(arg1.getStart()), Math.toIntExact(arg1.getEnd())));
+                arg1.addFeature("type", "argument");
+                Annotation arg2 = new Annotation(coreLabelsToRegion(triple.object, arg2Id,
                         Discriminators.Uri.MARKABLE, text));
+                arg2.addFeature("text",
+                        text.substring(Math.toIntExact(arg2.getStart()), Math.toIntExact(arg2.getEnd())));
+                arg2.addFeature("type", "argument");
+                view.addAnnotation(pred);
+                view.addAnnotation(arg1);
+                view.addAnnotation(arg2);
                 Annotation relationAnn = view.newAnnotation(
                         String.format("%s%s", REL_ID, rid++),
                         Discriminators.Uri.GENERIC_RELATION);
-                relationAnn.addFeature(Features.GenericRelation.ARGUMENTS, Arrays.toString(new String[]{subjectId, objectId}));
-                relationAnn.addFeature(Features.GenericRelation.RELATION, relationId);
+                relationAnn.addFeature(Features.GenericRelation.ARGUMENTS, Arrays.toString(new String[]{arg1Id, arg2Id}));
+                relationAnn.addFeature(Features.GenericRelation.RELATION, predicateId);
                 relationAnn.addFeature(Features.GenericRelation.LABEL, triple.relationLemmaGloss());
+                relationAnn.addFeature("text",
+                        String.format("%s(%s, %s)", triple.relationLemmaGloss(), triple.subjectLemmaGloss(), triple.objectLemmaGloss()
+                ));
             }
             mid = 0;
             sid++;
